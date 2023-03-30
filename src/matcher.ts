@@ -50,6 +50,8 @@ function compareBase<T> (test?: T, comparedWith?: T | symbol) {
     // deep equal
     test === comparedWith ||
 
+    (test === undefined && comparedWith === nothing) ||
+
     // match types
     (typeof comparedWith === 'symbol' &&
       (

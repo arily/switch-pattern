@@ -308,7 +308,124 @@ describe('Matcher', function () {
   })
 
   describe('matching types', function () {
-    it('callable', function (done) {
+    it('unit (any)', function (done) {
+      const { patterns, exact, unit } = match({ test: Symbol('something you never seen') })
+
+      switch (patterns) {
+        case exact({ test: unit }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('String', function (done) {
+      const { patterns, exact, string } = match({ test: 'str' })
+
+      switch (patterns) {
+        case exact({ test: string }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Number', function (done) {
+      const { patterns, exact, number } = match({ test: 123 })
+
+      switch (patterns) {
+        case exact({ test: number }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Boolean', function (done) {
+      const { patterns, exact, boolean } = match({ test: false })
+
+      switch (patterns) {
+        case exact({ test: boolean }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('BigInt', function (done) {
+      const { patterns, exact, bigint } = match({ test: BigInt(123) })
+
+      switch (patterns) {
+        case exact({ test: bigint }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Array', function (done) {
+      const { patterns, exact, array } = match({ test: [] })
+
+      switch (patterns) {
+        case exact({ test: array }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Object', function (done) {
+      const { patterns, exact, object } = match({ test: {} })
+
+      switch (patterns) {
+        case exact({ test: object }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Nothing (undefined)', function (done) {
+      const { patterns, exact, nothing } = match({ test: undefined })
+
+      switch (patterns) {
+        case exact({ test: nothing }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Symbol', function (done) {
+      const { patterns, exact, symbol } = match({ test: Symbol('something you never seen 2') })
+
+      switch (patterns) {
+        case exact({ test: symbol }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Callable', function (done) {
       const { callable, patterns, exact } = match({ fn () { return 1 }, async fn2 () { } })
 
       switch (patterns) {
