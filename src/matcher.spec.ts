@@ -8,7 +8,7 @@ const testDeepObject = {
   array: testBaseArray,
   l1: '1'
 }
-const testDeepArray = [testBaseObject, testBaseArray]
+const testDeepArray = [testBaseObject, testBaseArray] as const
 describe('Matcher', function () {
   describe('create pattern matching context', function () {
     it('should create without error', function (done) {

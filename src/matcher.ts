@@ -31,11 +31,11 @@ export const reverseTypes = Object.entries(types).reduce<Record<symbol, keyof ty
   return acc
 }, {})
 
-type CheckExact<T> = {
-  [key in keyof T]: (T[key] extends Record<any, any> ? CheckExact<T[key]> : T[key]) | symbol
+type Exact<T> = {
+  readonly [key in keyof T]: (T[key] extends Record<any, any> ? Exact<T[key]> : T[key]) | symbol
 }
-type CheckSome<T> = {
-  [key in keyof T]?: (T[key] extends Record<any, any> ? CheckSome<T[key]> : T[key]) | symbol
+type Some<T> = {
+  readonly [key in keyof T]?: (T[key] extends Record<any, any> ? Some<T[key]> : T[key]) | symbol
 }
 
 function createContext<T extends Record<any, any>> (context: T) {
@@ -87,7 +87,7 @@ export function match<T extends Record<any, any>> (t: T) {
     }
   }
 
-  function some (c: CheckSome<T>) {
+  function some (c: Some<T>) {
     let key: keyof T
     for (key in c) {
       if (!compareSome(t[key], c[key])) {
@@ -97,7 +97,7 @@ export function match<T extends Record<any, any>> (t: T) {
     return context
   }
 
-  function exact (c: CheckExact<T>) {
+  function exact (c: Exact<T>) {
     const keyofC = Object.keys(c)
     if (!Object.keys(t).every(k => keyofC.includes(k))) { return false }
     let key: keyof T
@@ -109,7 +109,7 @@ export function match<T extends Record<any, any>> (t: T) {
     return context
   }
 
-  function deepSome (c: CheckSome<T>) {
+  function deepSome (c: Some<T>) {
     let key: keyof T
     for (key in c) {
       const cmp1 = compareSome(t[key], c[key])
@@ -130,7 +130,7 @@ export function match<T extends Record<any, any>> (t: T) {
     return context
   }
 
-  function deepExact (c: CheckExact<T>) {
+  function deepExact (c: Exact<T>) {
     const keyofC = Object.keys(c)
     if (!Object.keys(t).every(k => keyofC.includes(k))) { return false }
     let key: keyof T
