@@ -1,82 +1,143 @@
-type Branded<T, TBrand> = T & { __brand: TBrand }
-type Compare = <T>(test?: T[keyof T], compareWith?: T[keyof T] | symbol) => boolean
+export const string = Symbol('string')
+export const number = Symbol('number')
+export const object = Symbol('object')
+export const nothing = Symbol('undefined')
+export const unit = Symbol('any value')
+export const bigint = Symbol('bigint')
+export const boolean = Symbol('boolean')
+export const callable = Symbol('function')
+export const symbol = Symbol('symbol')
+export const array = Symbol('array')
 
-const string = Symbol('string')
-const number = Symbol('number')
-const object = Symbol('object')
-const _undefined = Symbol('undefined')
-const unit = Symbol('any value')
-const bigint = Symbol('bigint')
-const boolean = Symbol('boolean')
-const _function = Symbol('function')
-const symbol = Symbol('symbol')
-const array = Symbol('array')
-
-const typeMatch = {
+export const types = {
   unit,
 
   string,
   number,
-  undefined: _undefined,
+  nothing,
   object,
   bigint,
   boolean,
-  function: _function,
+  callable,
   symbol,
 
   array
 }
-const reversed = Object.entries(typeMatch).reduce<Record<symbol, keyof typeof typeMatch>>((acc, [k, v]) => {
-  acc[v] = k as keyof typeof typeMatch
+export const reverseTypes = Object.entries(types).reduce<Record<symbol, keyof typeof types>>((acc, [k, v]) => {
+  acc[v] = k as keyof typeof types
   return acc
 }, {})
 
-type Check<T> = {
-  [key in keyof T]: T[key] | symbol
+type CheckExact<T> = {
+  [key in keyof T]: (T[key] extends Record<any, any> ? CheckExact<T[key]> : T[key]) | symbol
+}
+type CheckSome<T> = {
+  [key in keyof T]?: (T[key] extends Record<any, any> ? CheckSome<T[key]> : T[key]) | symbol
 }
 
 function createContext<T extends Record<any, any>> (context: T) {
-  const mixed = Object.assign(context, { patterns: context as Branded<typeof context, 'patterns'> })
-  return mixed as Branded<typeof mixed, 'match'>
+  const mixed = Object.assign(context, { patterns: context })
+  return mixed
 }
-const _compare: Compare = (test, comparedWith) => {
+
+function compareBase<T> (test?: T, comparedWith?: T | symbol) {
   return (
-    comparedWith === typeMatch.unit ||
+    comparedWith === types.unit ||
     test === comparedWith ||
-    // eslint-disable-next-line valid-typeof
-    (typeof test === reversed[comparedWith as symbol])
+
+    // match types
+    (typeof comparedWith === 'symbol' && (
+      (Array.isArray(test) && reverseTypes[comparedWith] === 'array') ||
+      // eslint-disable-next-line valid-typeof
+      (typeof test === reverseTypes[comparedWith]))
+    )
   )
+}
+function compareSome<T> (test?: T, comparedWith?: T | symbol) {
+  return compareBase(...arguments)
+}
+
+function compareExact<T> (test?: T, comparedWith?: T | symbol) {
+  return compareBase(...arguments)
 }
 
 export function match<T extends Record<any, any>> (t: T) {
   const context = {
-    ...typeMatch,
+    ...types,
 
     some,
     exact,
 
     deep: {
-      some: deepSome
-      // exact: deepExact
+      some: deepSome,
+      exact: deepExact
     }
   }
 
-  function some (c: Partial<Check<T>>, compare: Compare = _compare) {
+  function some (c: CheckSome<T>) {
     let key: keyof T
     for (key in c) {
-      if (!compare(t[key], c[key])) {
+      if (!compareSome(t[key], c[key])) {
         return false
       }
     }
     return context
   }
 
-  function exact (c: Check<T>) {
+  function exact (c: CheckExact<T>) {
     const keyofC = Object.keys(c)
-    return Object.keys(t).every(k => keyofC.includes(k)) && some(c)
+    if (!Object.keys(t).every(k => keyofC.includes(k))) { return false }
+    let key: keyof T
+    for (key in c) {
+      if (!compareExact(t[key], c[key])) {
+        return false
+      }
+    }
+    return context
   }
 
-  function deepSome (c: Check<T>) {
+  function deepSome (c: CheckSome<T>) {
+    let key: keyof T
+    for (key in c) {
+      const cmp1 = compareSome(t[key], c[key])
+      if (!cmp1) {
+        if (typeof c[key] === 'symbol') return false
+        const canDeep = (Array.isArray(c[key]) && Array.isArray(t[key])) || (typeof c[key] === 'object' && typeof t[key] === 'object')
+        if (canDeep) {
+          const deepMatch = match(t[key])
+          const result = deepMatch.deep.some(c[key] as Exclude<typeof c[typeof key], symbol>)
+          if (result === false) {
+            return false
+          }
+        } else {
+          return false
+        }
+      }
+    }
+    return context
+  }
+
+  function deepExact (c: CheckExact<T>) {
+    const keyofC = Object.keys(c)
+    if (!Object.keys(t).every(k => keyofC.includes(k))) { return false }
+    let key: keyof T
+    for (key in c) {
+      const cmp1 = compareExact(t[key], c[key])
+      if (!cmp1) {
+        if (typeof c[key] === 'symbol') return false
+        const canDeep = (Array.isArray(c[key]) && Array.isArray(t[key])) || (typeof c[key] === 'object' && typeof t[key] === 'object')
+        if (canDeep) {
+          const deepMatch = match(t[key])
+          const result = deepMatch.deep.exact(c[key] as Exclude<typeof c[typeof key], symbol>)
+          if (result === false) {
+            return false
+          }
+        } else {
+          return false
+        }
+      }
+    }
+    return context
   }
 
   return createContext(context)

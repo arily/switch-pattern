@@ -10,12 +10,11 @@
     "scripts": {
         "clear": "rm -rf dist/",
         "clear:all": "rm -rf node_modules/ && npm run clear",
-        "test": "nyc ts-mocha -p tsconfig.json src/**/*.spec.ts"
+        "test": "nyc  ts-mocha -p tsconfig.json src/**/*.spec.ts"
     },
-    "dependencies": {
-    },
+    "dependencies": {},
     "maintainers": [
-        "Piotr Kowalski <piecioshka@gmail.com> https://piecioshka.pl"
+        "arily <arily@arily.moe>"
     ],
     "devDependencies": {
         "nyc": "^15.1.0",
