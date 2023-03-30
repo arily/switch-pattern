@@ -8,6 +8,7 @@ export const boolean = Symbol('boolean')
 export const callable = Symbol('function')
 export const symbol = Symbol('symbol')
 export const array = Symbol('array')
+export const promise = Symbol('promise')
 
 export const types = {
   unit,
@@ -20,6 +21,8 @@ export const types = {
   boolean,
   callable,
   symbol,
+
+  promise,
 
   array
 }
@@ -42,23 +45,33 @@ function createContext<T extends Record<any, any>> (context: T) {
 
 function compareBase<T> (test?: T, comparedWith?: T | symbol) {
   return (
-    comparedWith === types.unit ||
+    // unit type
+    comparedWith === unit ||
+    // deep equal
     test === comparedWith ||
 
     // match types
-    (typeof comparedWith === 'symbol' && (
-      (Array.isArray(test) && reverseTypes[comparedWith] === 'array') ||
-      // eslint-disable-next-line valid-typeof
-      (typeof test === reverseTypes[comparedWith]))
+    (typeof comparedWith === 'symbol' &&
+      (
+        // array
+        Array.isArray(test)
+          ? comparedWith === array
+          : test instanceof Function
+            ? comparedWith === callable
+            : test instanceof Promise
+              ? comparedWith === promise
+              // eslint-disable-next-line valid-typeof
+              : (typeof test === reverseTypes[comparedWith])
+      )
     )
   )
 }
 function compareSome<T> (test?: T, comparedWith?: T | symbol) {
-  return compareBase(...arguments)
+  return compareBase(test, comparedWith)
 }
 
-function compareExact<T> (test?: T, comparedWith?: T | symbol) {
-  return compareBase(...arguments)
+function compareExact<T> (test: T, comparedWith: T | symbol) {
+  return compareBase(test, comparedWith)
 }
 
 export function match<T extends Record<any, any>> (t: T) {
