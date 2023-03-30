@@ -1,0 +1,52 @@
+{
+    "name": "switch-pattern",
+    "description": "",
+    "version": "1.0.4",
+    "license": "MIT",
+    "author": {
+        "name": "Piotr Kowalski",
+        "email": "piecioshka@gmail.com",
+        "url": "https://piecioshka.pl/"
+    },
+    "scripts": {
+        "clear": "rm -rf dist/",
+        "clear:all": "rm -rf node_modules/ && npm run clear",
+        "test": "echo not yet",
+        "start": "tsc && node dist/index.js",
+        "dev": "ts-node src/index.ts",
+        "postversion": "git push --tags"
+    },
+    "dependencies": {
+        "@types/node": "^12.11.5",
+        "ora": "^4.0.2",
+        "replace-in-files": "^2.0.3",
+        "ts-node": "^8.4.1",
+        "typescript": "^3.6.4",
+        "yargs": "^14.2.0"
+    },
+    "maintainers": [
+        "Piotr Kowalski <piecioshka@gmail.com> https://piecioshka.pl"
+    ],
+    "devDependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:piecioshka/switch-pattern.git"
+    },
+    "files": [
+        "bin",
+        "src",
+        "LICENSE",
+        "package.json",
+        "README.md",
+        "tsconfig.json"
+    ],
+    "keywords": [
+        "typescript",
+        "playground",
+        "create",
+        "simple",
+        "project",
+        "seed"
+    ],
+    "bin": "./bin/cli.js"
+}
