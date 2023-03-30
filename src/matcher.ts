@@ -5,7 +5,7 @@ const string = Symbol('string')
 const number = Symbol('number')
 const object = Symbol('object')
 const _undefined = Symbol('undefined')
-const unit = Symbol('any')
+const unit = Symbol('any value')
 const bigint = Symbol('bigint')
 const boolean = Symbol('boolean')
 const _function = Symbol('function')
@@ -40,7 +40,6 @@ function createContext<T extends Record<any, any>> (context: T) {
   return mixed as Branded<typeof mixed, 'match'>
 }
 const _compare: Compare = (test, comparedWith) => {
-  console.log(test, comparedWith)
   return (
     comparedWith === typeMatch.unit ||
     test === comparedWith ||
