@@ -32,10 +32,10 @@ export const reverseTypes = Object.entries(types).reduce<Record<symbol, keyof ty
 }, {})
 
 type Exact<T> = {
-  readonly [key in keyof T]: (T[key] extends Record<any, any> ? Exact<T[key]> : T[key]) | symbol
+  [key in keyof T]: (T[key] extends Record<any, any> ? Exact<T[key]> : T[key]) | symbol
 }
 type Some<T> = {
-  readonly [key in keyof T]?: (T[key] extends Record<any, any> ? Some<T[key]> : T[key]) | symbol
+  [key in keyof T]?: (T[key] extends Record<any, any> ? Some<T[key]> : T[key]) | symbol
 }
 
 function createContext<T extends Record<any, any>> (context: T) {

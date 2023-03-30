@@ -22,7 +22,7 @@ describe('Matcher', function () {
   })
   describe('pattern matching object', function () {
     const { patterns, some, exact, number, string, unit } = match(testBaseObject)
-    it('can match object some', function (done) {
+    it('some', function (done) {
       switch (patterns) {
         case some({ number: 2 }): {
           throw new Error('should not match')
@@ -42,7 +42,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match object exact', function (done) {
+    it('exact', function (done) {
       switch (patterns) {
         case exact({ number: 2 }): {
           throw new Error('should not match: missing member')
@@ -58,7 +58,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match types', function (done) {
+    it('base types', function (done) {
       switch (patterns) {
         case exact({ number, string }): {
           done()
@@ -69,7 +69,7 @@ describe('Matcher', function () {
 
   describe('pattern matching array', function () {
     const { patterns, some, exact, unit, string } = match(testBaseArray)
-    it('can match some', function (done) {
+    it('some', function (done) {
       switch (patterns) {
         case some([string, 2]): {
           throw new Error('should not match')
@@ -83,7 +83,14 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match exact', function (done) {
+    it('exact', function (done) {
+      switch (patterns) {
+        case exact([1, 2, string]): {
+          done()
+        }
+      }
+    })
+    it('base types', function (done) {
       switch (patterns) {
         case exact([unit, unit, string]): {
           done()
@@ -94,7 +101,7 @@ describe('Matcher', function () {
 
   describe('pattern matching deep object', function () {
     const { patterns, some, exact, array, string, object, bigint, deep, number, unit } = match(testDeepObject)
-    it('can match one layer with some', function (done) {
+    it('one layer with some', function (done) {
       switch (patterns) {
         case some({ l1: callable }): {
           throw new Error('should not match; callable')
@@ -108,7 +115,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match one layer with exact', function (done) {
+    it('one layer with exact', function (done) {
       switch (patterns) {
         case exact({ l1: bigint, deep: object, array }): {
           throw new Error('should not match')
@@ -122,7 +129,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match deep object with deepSome', function (done) {
+    it('deep object with deepSome', function (done) {
       switch (patterns) {
         case deep.some({ l1: unit, deep: { number: string } }): {
           throw new Error('should not match')
@@ -136,13 +143,16 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match array in object with deepSome', function (done) {
+    it('array in object with deepSome', function (done) {
       switch (patterns) {
-        case deep.some({ l1: unit, array: [2, 2, unit] }): {
-          throw new Error('should not match case 1')
+        case deep.some({ array: [2, 2, unit] }): {
+          throw new Error('should not match because 1!=2')
         }
-        case deep.some({ l1: string, array: [2, 2, unit] }): {
-          throw new Error('should not match')
+        case deep.some({ array: [number, 2, 2] }): {
+          throw new Error('should not match because [3] is string')
+        }
+        case deep.some({ l1: callable, array: [number, 2, 'string'] }): {
+          throw new Error('should not match because l1 is not callable')
         }
         case deep.some({ l1: string, array: [1, unit, 'string'] }): {
           done()
@@ -154,10 +164,10 @@ describe('Matcher', function () {
       }
     })
 
-    it('can match deep object with deepExact', function (done) {
+    it('deep object with deepExact', function (done) {
       switch (patterns) {
         case deep.exact({ l1: string, deep: { number: string, string } }): {
-          throw new Error('should not match: missing member')
+          throw new Error('should not match because this pattern misses some members')
         }
         case deep.exact({ l1: string, deep: { number: string, string }, array: unit }): {
           throw new Error('should not match')
@@ -174,7 +184,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match array in object with deepExact', function (done) {
+    it('array in object with deepExact', function (done) {
       switch (patterns) {
         case deep.exact({ l1: bigint, array: [1, 2, unit], deep: unit }): {
           throw new Error('should not match')
@@ -192,7 +202,7 @@ describe('Matcher', function () {
 
   describe('pattern matching deep array', function () {
     const { patterns, some, exact, array, string, object, bigint, deep, number, unit } = match(testDeepArray)
-    it('can match one layer of array with some', function (done) {
+    it('one layer of array with some', function (done) {
       switch (patterns) {
         case some([number, array]): {
           throw new Error('should not match: should be obj, arr')
@@ -209,7 +219,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match one layer with exact', function (done) {
+    it('one layer with exact', function (done) {
       switch (patterns) {
         case exact([string]): {
           throw new Error('should not match')
@@ -223,7 +233,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match deep object with deepSome', function (done) {
+    it('deep object with deepSome', function (done) {
       switch (patterns) {
         case deep.some([{ number: string }]): {
           throw new Error('should not match')
@@ -237,7 +247,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match array in object with deepSome', function (done) {
+    it('array in object with deepSome', function (done) {
       switch (patterns) {
         case deep.some([unit, [string]]): {
           throw new Error('should not match case 1')
@@ -255,7 +265,7 @@ describe('Matcher', function () {
       }
     })
 
-    it('can match deep object with deepExact', function (done) {
+    it('deep object with deepExact', function (done) {
       switch (patterns) {
         case deep.exact([]): {
           throw new Error('should not match: missing member')
@@ -275,7 +285,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match array in object with deepExact', function (done) {
+    it('array in object with deepExact', function (done) {
       switch (patterns) {
         case deep.exact([]): {
           throw new Error('should not match: missing member')
@@ -298,7 +308,7 @@ describe('Matcher', function () {
   })
 
   describe('matching types', function () {
-    it('can match callable', function (done) {
+    it('callable', function (done) {
       const { callable, patterns, exact } = match({ fn () { return 1 }, async fn2 () { } })
 
       switch (patterns) {
@@ -311,7 +321,7 @@ describe('Matcher', function () {
         }
       }
     })
-    it('can match Promise', function (done) {
+    it('Promise', function (done) {
       const { promise, patterns, exact } = match({ p: Promise.resolve(42) })
 
       switch (patterns) {
