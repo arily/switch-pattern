@@ -46,14 +46,16 @@ const _minify = async (code) => {
     compress: {
       arguments: true,
       hoist_props: true,
-      keep_fargs: false,
       keep_fnames: false,
       expression: true,
       booleans: true,
+      module: true,
       inline: true,
+      // unsafe_arrows: true,
+      unsafe_comps: true,
+      unsafe_Function: true,
+      unsafe_math: true,
       unsafe_methods: true,
-      // unsafe_math: true,
-      // unsafe_Function: true,
       passes: 3
     },
     mangle: {
