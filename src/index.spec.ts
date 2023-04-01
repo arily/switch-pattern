@@ -1,5 +1,5 @@
 import { assert } from 'console'
-import { callable, match, number, string, unit, object, array, bigint, nothing, symbol, boolean, promise } from './matcher'
+import { callable, match, number, string, unit, object, array, bigint, nothing, symbol, boolean, promise } from '.'
 
 const testBaseObject = { number: 1, string: 'string' }
 const testBaseArray = [1, 2, 'string'] as const

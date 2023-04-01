@@ -1,4 +1,4 @@
-import { match, number, string, object } from './matcher'
+import { match, number, string, object } from '.'
 
 console.log(string)
 const { patterns, some, exact } = match([1, 2, 'what'])
