@@ -121,8 +121,7 @@ export function match<T extends Record<any, any>> (t: T) {
   function deepSome (c: Some<T>) {
     let key: keyof T
     for (key in c) {
-      const cmp1 = $compareSome!(t[key], c[key])
-      if (!cmp1) {
+      if (!$compareSome!(t[key], c[key])) {
         if (typeof c[key] === 'symbol') return
         if ($canDeep!(t[key], c[key])) {
           const deepMatch = match(t[key])
@@ -144,8 +143,7 @@ export function match<T extends Record<any, any>> (t: T) {
     }
     let key: keyof T
     for (key in c) {
-      const cmp1 = $compareExact!(t[key], c[key])
-      if (!cmp1) {
+      if (!$compareExact!(t[key], c[key])) {
         if (typeof c[key] === 'symbol') return
         if ($canDeep!(t[key], c[key])) {
           const deepMatch = match(t[key])
