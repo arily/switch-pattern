@@ -1,6 +1,6 @@
-import { match } from './matcher'
+import { match, number, string, object } from './matcher'
 
-const { patterns, some, exact, number, string, object } = match([1, 2, 'what', {}])
+const { patterns, some, exact } = match([1, 2, 'what', {}])
 
 switch (patterns) {
   case exact([number, 2, string, object]): {
