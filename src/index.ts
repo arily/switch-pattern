@@ -12,7 +12,7 @@ export const symbol = Symbol('symbol')
 export const array = Symbol('array')
 export const promise = Symbol('promise')
 
-export const types = {
+const types = {
   unit,
 
   string,
