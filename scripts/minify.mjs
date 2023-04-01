@@ -51,15 +51,17 @@ const _minify = async (code) => {
       expression: true,
       booleans: true,
       inline: true,
-      passes: 3,
-      unsafe: true
+      unsafe_methods: true,
+      // unsafe_math: true,
+      // unsafe_Function: true,
+      passes: 3
     },
     mangle: {
       eval: true,
       toplevel: true
     },
     format: {
-      inline_script: true
+      wrap_func_args: false
     }
   })
   if (!result.code) {

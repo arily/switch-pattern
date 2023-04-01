@@ -45,13 +45,9 @@ function $createContext<T extends Record<any, any>> (context: T) {
   return mixed
 }
 
-function $compareBase<T> (test?: T, comparedWith?: T | symbol) {
-  return (
-    // unit type
-    comparedWith === unit ||
-    // deep equal
+function compareBase<T> (test?: T, comparedWith?: T | symbol) {
+  return comparedWith === unit ||
     test === comparedWith ||
-
     (test === undefined && comparedWith === nothing) ||
 
     // match types
@@ -68,20 +64,24 @@ function $compareBase<T> (test?: T, comparedWith?: T | symbol) {
               : (typeof test === reverseTypes[comparedWith])
       )
     )
-  )
 }
 
-function $compareSome<T> (test$?: T, compareWith$?: T | symbol) {
-  return $compareBase!(test$, compareWith$)
+function $compareSome<T> (test?: T, compareWith?: T | symbol) {
+  return compareBase(test, compareWith)
 }
 
-function $compareExact<T> (test$: T, compareWith$: T | symbol) {
-  return $compareBase!(test$, compareWith$)
+function $compareExact<T> (test: T, compareWith: T | symbol) {
+  return compareBase(test, compareWith)
 }
 
 function $canDeep<T> (test$: T, compareWith$: T) {
   return (Array.isArray(compareWith$) && Array.isArray(test$)) ||
-    (typeof compareWith$ === 'object' && typeof test$ === 'object')
+  (typeof compareWith$ === 'object' && typeof test$ === 'object')
+}
+
+function $exactKeys<T extends Record<any, any>> (test$: T, compareWith$: T) {
+  const keyofC = Object.keys(compareWith$)
+  return Object.keys(test$).every(k => keyofC.includes(k))
 }
 
 export function match<T extends Record<any, any>> (t: T) {
@@ -99,19 +99,20 @@ export function match<T extends Record<any, any>> (t: T) {
     let key: keyof T
     for (key in c) {
       if (!$compareSome!(t[key], c[key])) {
-        return false
+        return
       }
     }
     return context
   }
 
   function exact (c: Exact<T>) {
-    const keyofC = Object.keys(c)
-    if (!Object.keys(t).every(k => keyofC.includes(k))) { return false }
+    if (!$exactKeys!(t, c)) {
+      return
+    }
     let key: keyof T
     for (key in c) {
       if (!$compareExact!(t[key], c[key])) {
-        return false
+        return
       }
     }
     return context
@@ -122,16 +123,15 @@ export function match<T extends Record<any, any>> (t: T) {
     for (key in c) {
       const cmp1 = $compareSome!(t[key], c[key])
       if (!cmp1) {
-        if (typeof c[key] === 'symbol') return false
-        const canDeep = $canDeep!(t[key], c[key])
-        if (canDeep) {
+        if (typeof c[key] === 'symbol') return
+        if ($canDeep!(t[key], c[key])) {
           const deepMatch = match(t[key])
           const result = deepMatch.deep.some(c[key] as Exclude<typeof c[typeof key], symbol>)
-          if (result === false) {
-            return false
+          if (!result) {
+            return
           }
         } else {
-          return false
+          return
         }
       }
     }
@@ -139,22 +139,22 @@ export function match<T extends Record<any, any>> (t: T) {
   }
 
   function deepExact (c: Exact<T>) {
-    const keyofC = Object.keys(c)
-    if (!Object.keys(t).every(k => keyofC.includes(k))) { return false }
+    if (!$exactKeys!(t, c)) {
+      return
+    }
     let key: keyof T
     for (key in c) {
       const cmp1 = $compareExact!(t[key], c[key])
       if (!cmp1) {
-        if (typeof c[key] === 'symbol') return false
-        const canDeep = $canDeep!(t[key], c[key])
-        if (canDeep) {
+        if (typeof c[key] === 'symbol') return
+        if ($canDeep!(t[key], c[key])) {
           const deepMatch = match(t[key])
           const result = deepMatch.deep.exact(c[key] as Exclude<typeof c[typeof key], symbol>)
-          if (result === false) {
-            return false
+          if (!result) {
+            return
           }
         } else {
-          return false
+          return
         }
       }
     }

@@ -11,7 +11,7 @@
         "clear": "rm -rf dist/",
         "clear:all": "rm -rf node_modules/ && npm run clear",
         "test": "nyc  ts-mocha -p tsconfig.json src/**/*.spec.ts",
-        "build": "ttsc -p tsconfig.cjs.json; ttsc -p tsconfig.esm.json; node scripts/minify.mjs"
+        "build": "rm -rf dist; rm -rf output; ttsc -p tsconfig.cjs.json; ttsc -p tsconfig.esm.json; node scripts/minify.mjs"
     },
     "dependencies": {},
     "maintainers": [

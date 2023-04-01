@@ -1,9 +1,11 @@
 import { match, number, string, object } from './matcher'
 
-const { patterns, some, exact } = match([1, 2, 'what', {}])
+console.log(string)
+const { patterns, some, exact } = match([1, 2, 'what'])
 
+console.log(patterns, some([number, 2, 'what']))
 switch (patterns) {
-  case exact([number, 2, string, object]): {
+  case exact([number, 2, string]): {
     console.log('matched')
     break
   }
