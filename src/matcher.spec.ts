@@ -1,5 +1,5 @@
 import { assert } from 'console'
-import { callable, match } from './matcher'
+import { callable, match, number, string, unit, object, array, bigint, nothing, symbol, boolean, promise } from './matcher'
 
 const testBaseObject = { number: 1, string: 'string' }
 const testBaseArray = [1, 2, 'string'] as const
@@ -21,7 +21,7 @@ describe('Matcher', function () {
     })
   })
   describe('pattern matching object', function () {
-    const { patterns, some, exact, number, string, unit } = match(testBaseObject)
+    const { patterns, some, exact } = match(testBaseObject)
     it('some', function (done) {
       switch (patterns) {
         case some({ number: 2 }): {
@@ -71,7 +71,7 @@ describe('Matcher', function () {
   })
 
   describe('pattern matching array', function () {
-    const { patterns, some, exact, unit, string } = match(testBaseArray)
+    const { patterns, some, exact } = match(testBaseArray)
     it('some', function (done) {
       switch (patterns) {
         case some([string, 2]): {
@@ -103,7 +103,7 @@ describe('Matcher', function () {
   })
 
   describe('pattern matching deep object', function () {
-    const { patterns, some, exact, array, string, object, bigint, deep, number, unit } = match(testDeepObject)
+    const { patterns, some, exact, deep } = match(testDeepObject)
     it('one layer with some', function (done) {
       switch (patterns) {
         case some({ l1: callable }): {
@@ -208,7 +208,7 @@ describe('Matcher', function () {
   })
 
   describe('pattern matching deep array', function () {
-    const { patterns, some, exact, array, string, object, deep, number, unit } = match(testDeepArray)
+    const { patterns, some, exact, deep } = match(testDeepArray)
     it('one layer of array with some', function (done) {
       switch (patterns) {
         case some([number, array]): {
@@ -322,7 +322,7 @@ describe('Matcher', function () {
 
   describe('matching types', function () {
     it('unit (any)', function (done) {
-      const { patterns, exact, unit } = match({ test: Symbol('something you never seen') })
+      const { patterns, exact } = match({ test: Symbol('something you never seen') })
 
       switch (patterns) {
         case exact({ test: unit }): {
@@ -335,7 +335,7 @@ describe('Matcher', function () {
       }
     })
     it('String', function (done) {
-      const { patterns, exact, string } = match({ test: 'str' })
+      const { patterns, exact } = match({ test: 'str' })
 
       switch (patterns) {
         case exact({ test: string }): {
@@ -348,7 +348,7 @@ describe('Matcher', function () {
       }
     })
     it('Number', function (done) {
-      const { patterns, exact, number } = match({ test: 123 })
+      const { patterns, exact } = match({ test: 123 })
 
       switch (patterns) {
         case exact({ test: number }): {
@@ -361,7 +361,7 @@ describe('Matcher', function () {
       }
     })
     it('Boolean', function (done) {
-      const { patterns, exact, boolean } = match({ test: false })
+      const { patterns, exact } = match({ test: false })
 
       switch (patterns) {
         case exact({ test: boolean }): {
@@ -374,7 +374,7 @@ describe('Matcher', function () {
       }
     })
     it('BigInt', function (done) {
-      const { patterns, exact, bigint } = match({ test: BigInt(123) })
+      const { patterns, exact } = match({ test: BigInt(123) })
 
       switch (patterns) {
         case exact({ test: bigint }): {
@@ -387,7 +387,7 @@ describe('Matcher', function () {
       }
     })
     it('Array', function (done) {
-      const { patterns, exact, array } = match({ test: [] })
+      const { patterns, exact } = match({ test: [] })
 
       switch (patterns) {
         case exact({ test: array }): {
@@ -400,7 +400,7 @@ describe('Matcher', function () {
       }
     })
     it('Object', function (done) {
-      const { patterns, exact, object } = match({ test: {} })
+      const { patterns, exact } = match({ test: {} })
 
       switch (patterns) {
         case exact({ test: object }): {
@@ -413,7 +413,7 @@ describe('Matcher', function () {
       }
     })
     it('Nothing (undefined)', function (done) {
-      const { patterns, exact, nothing } = match({ test: undefined })
+      const { patterns, exact } = match({ test: undefined })
 
       switch (patterns) {
         case exact({ test: nothing }): {
@@ -426,7 +426,7 @@ describe('Matcher', function () {
       }
     })
     it('Symbol', function (done) {
-      const { patterns, exact, symbol } = match({ test: Symbol('something you never seen 2') })
+      const { patterns, exact } = match({ test: Symbol('something you never seen 2') })
 
       switch (patterns) {
         case exact({ test: symbol }): {
@@ -439,7 +439,7 @@ describe('Matcher', function () {
       }
     })
     it('Callable', function (done) {
-      const { callable, patterns, exact } = match({ fn () { return 1 }, async fn2 () { } })
+      const {  patterns, exact } = match({ fn () { return 1 }, async fn2 () { } })
 
       switch (patterns) {
         case exact({ fn: callable, fn2: callable }): {
@@ -452,7 +452,7 @@ describe('Matcher', function () {
       }
     })
     it('Promise', function (done) {
-      const { promise, patterns, exact } = match({ p: Promise.resolve(42) })
+      const {  patterns, exact } = match({ p: Promise.resolve(42) })
 
       switch (patterns) {
         case exact({ p: promise }): {

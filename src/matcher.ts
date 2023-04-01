@@ -86,8 +86,6 @@ function $canDeep<T> (test$: T, compareWith$: T) {
 
 export function match<T extends Record<any, any>> (t: T) {
   const context = {
-    ...types,
-
     some,
     exact,
 
