@@ -79,9 +79,9 @@ function $compareExact<T> (test$: T, compareWith$: T | symbol) {
   return $compareBase!(test$, compareWith$)
 }
 
-function $canDeep <T> (test$: T, compareWith$: T) {
+function $canDeep<T> (test$: T, compareWith$: T) {
   return (Array.isArray(compareWith$) && Array.isArray(test$)) ||
-  (typeof compareWith$ === 'object' && typeof test$ === 'object')
+    (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
 export function match<T extends Record<any, any>> (t: T) {
