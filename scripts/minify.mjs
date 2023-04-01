@@ -1,3 +1,4 @@
+// @ts-check
 import * as url from 'url'
 import { join, relative, resolve, dirname } from 'path'
 import { readFile, writeFile, readdir } from 'fs/promises'
@@ -30,25 +31,6 @@ const size = function getReadableFileSizeString (fileSizeInBytes) {
   return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i]
 }
 
-const minifyOpt = {
-  ecma: 2020,
-  compress: {
-    arguments: true,
-    hoist_props: true,
-    keep_fargs: false,
-    expression: true,
-    booleans: true,
-    passes: 3
-  },
-  mangle: {
-    eval: true,
-    toplevel: true
-  },
-  format: {
-    inline_script: true
-  }
-}
-
 function ensureDirectoryExistence (filePath) {
   const _dirname = dirname(filePath)
   if (existsSync(_dirname)) {
@@ -59,7 +41,27 @@ function ensureDirectoryExistence (filePath) {
 }
 
 const _minify = async (code) => {
-  const result = await minify(code, minifyOpt)
+  const result = await minify(code, {
+    ecma: 2020,
+    compress: {
+      arguments: true,
+      hoist_props: true,
+      keep_fargs: false,
+      keep_fnames: false,
+      expression: true,
+      booleans: true,
+      inline: true,
+      passes: 3,
+      unsafe: true
+    },
+    mangle: {
+      eval: true,
+      toplevel: true
+    },
+    format: {
+      inline_script: true
+    }
+  })
   if (!result.code) {
     return code
   }
