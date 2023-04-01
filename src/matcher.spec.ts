@@ -27,6 +27,7 @@ describe('Matcher', function () {
         case some({ number: 2 }): {
           throw new Error('should not match')
         }
+        // @ts-expect-error intended type error
         case some({ number: '2' }): {
           throw new Error('should not match')
         }
@@ -44,9 +45,11 @@ describe('Matcher', function () {
     })
     it('exact', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case exact({ number: 2 }): {
           throw new Error('should not match: missing member')
         }
+        // @ts-expect-error intended type error
         case exact({ number: 2, string: 2 }): {
           throw new Error('should not match')
         }
@@ -145,9 +148,11 @@ describe('Matcher', function () {
     })
     it('array in object with deepSome', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case deep.some({ array: [2, 2, unit] }): {
           throw new Error('should not match because 1!=2')
         }
+        // @ts-expect-error intended type error
         case deep.some({ array: [number, 2, 2] }): {
           throw new Error('should not match because [3] is string')
         }
@@ -166,12 +171,14 @@ describe('Matcher', function () {
 
     it('deep object with deepExact', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case deep.exact({ l1: string, deep: { number: string, string } }): {
           throw new Error('should not match because this pattern misses some members')
         }
         case deep.exact({ l1: string, deep: { number: string, string }, array: unit }): {
           throw new Error('should not match')
         }
+        // @ts-expect-error intended type error
         case deep.exact({ l1: string, deep: { number: 'string', string }, array: unit }): {
           throw new Error('should not match: no deep')
         }
@@ -201,7 +208,7 @@ describe('Matcher', function () {
   })
 
   describe('pattern matching deep array', function () {
-    const { patterns, some, exact, array, string, object, bigint, deep, number, unit } = match(testDeepArray)
+    const { patterns, some, exact, array, string, object, deep, number, unit } = match(testDeepArray)
     it('one layer of array with some', function (done) {
       switch (patterns) {
         case some([number, array]): {
@@ -221,6 +228,7 @@ describe('Matcher', function () {
     })
     it('one layer with exact', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case exact([string]): {
           throw new Error('should not match')
         }
@@ -267,12 +275,15 @@ describe('Matcher', function () {
 
     it('deep object with deepExact', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case deep.exact([]): {
           throw new Error('should not match: missing member')
         }
+        // @ts-expect-error intended type error
         case deep.exact([unit]): {
           throw new Error('should not match case 1')
         }
+        // @ts-expect-error intended type error
         case deep.exact([object]): {
           throw new Error('should not match')
         }
@@ -287,9 +298,11 @@ describe('Matcher', function () {
     })
     it('array in object with deepExact', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case deep.exact([]): {
           throw new Error('should not match: missing member')
         }
+        // @ts-expect-error intended type error
         case deep.exact([unit]): {
           throw new Error('should not match case 1')
         }
