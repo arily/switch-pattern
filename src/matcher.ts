@@ -40,7 +40,7 @@ type Some<T> = {
   [key in keyof T]?: (T[key] extends Record<any, any> ? Some<T[key]> : T[key]) | symbol
 }
 
-function createContext<T extends Record<any, any>> (context: T) {
+function $createContext<T extends Record<any, any>> (context: T) {
   const mixed = Object.assign(context, { patterns: context })
   return mixed
 }
@@ -71,12 +71,17 @@ function $compareBase<T> (test?: T, comparedWith?: T | symbol) {
   )
 }
 
-function $compareSome<T> (test?: T, comparedWith?: T | symbol) {
-  return $compareBase!(test, comparedWith)
+function $compareSome<T> (test$?: T, compareWith$?: T | symbol) {
+  return $compareBase!(test$, compareWith$)
 }
 
-function $compareExact<T> (test: T, comparedWith: T | symbol) {
-  return $compareBase!(test, comparedWith)
+function $compareExact<T> (test$: T, compareWith$: T | symbol) {
+  return $compareBase!(test$, compareWith$)
+}
+
+function $canDeep <T> (test$: T, compareWith$: T) {
+  return (Array.isArray(compareWith$) && Array.isArray(test$)) ||
+  (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
 export function match<T extends Record<any, any>> (t: T) {
@@ -120,7 +125,7 @@ export function match<T extends Record<any, any>> (t: T) {
       const cmp1 = $compareSome!(t[key], c[key])
       if (!cmp1) {
         if (typeof c[key] === 'symbol') return false
-        const canDeep = (Array.isArray(c[key]) && Array.isArray(t[key])) || (typeof c[key] === 'object' && typeof t[key] === 'object')
+        const canDeep = $canDeep!(t[key], c[key])
         if (canDeep) {
           const deepMatch = match(t[key])
           const result = deepMatch.deep.some(c[key] as Exclude<typeof c[typeof key], symbol>)
@@ -143,7 +148,7 @@ export function match<T extends Record<any, any>> (t: T) {
       const cmp1 = $compareExact!(t[key], c[key])
       if (!cmp1) {
         if (typeof c[key] === 'symbol') return false
-        const canDeep = (Array.isArray(c[key]) && Array.isArray(t[key])) || (typeof c[key] === 'object' && typeof t[key] === 'object')
+        const canDeep = $canDeep!(t[key], c[key])
         if (canDeep) {
           const deepMatch = match(t[key])
           const result = deepMatch.deep.exact(c[key] as Exclude<typeof c[typeof key], symbol>)
@@ -158,7 +163,7 @@ export function match<T extends Record<any, any>> (t: T) {
     return context
   }
 
-  return createContext(context)
+  return $createContext!(context)
 }
 
 export default match
