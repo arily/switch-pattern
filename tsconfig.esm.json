@@ -4,5 +4,11 @@
     "outDir": "output/esm",
     "module": "ES2015",
     "suppressImplicitAnyIndexErrors": true,
-  }
+  },
+  "exclude": [
+    "src/**.spec.ts",
+  ],
+  "include": [
+    "src/index.ts",
+  ]
 }

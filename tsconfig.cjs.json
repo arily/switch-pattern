@@ -4,5 +4,11 @@
     "outDir": "output/cjs",
     "module": "CommonJS",
     "suppressImplicitAnyIndexErrors": true,
-  }
+  },
+  "exclude": [
+    "src/**.spec.ts",
+  ],
+  "include": [
+    "src/index.ts",
+  ]
 }

@@ -66,10 +66,6 @@
   },
   "exclude": [
     "node_modules",
-    "src/**.spec.ts",
     "src/transforms/*.ts",
-  ],
-  "include": [
-    "src/index.ts",
   ]
 }

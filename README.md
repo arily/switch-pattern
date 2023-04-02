@@ -24,6 +24,19 @@ switch (patterns) {
 }
 ```
 
+### supporting partial match or full match
+
+```typescript
+const match = <T>(input: T): Context => {
+  some(compareWith: Partial<T>): Context | void
+  exact(compareWith: T): Context | void
+  deep: {
+    some(compareWith: Partial<T>): Context | void
+    exact(compareWith: T): Context | void
+  }
+}
+```
+
 ### Top-tier TS & ESLint support
 
 ```typescript
@@ -92,6 +105,180 @@ if (exact([number, number, string, { number: number }])) {
 }
 ```
 
+### pattern matching types
+
+```typescript
+import {
+  callable,
+  match,
+  number,
+  string,
+  unit,
+  object,
+  array,
+  bigint,
+  nothing,
+  symbol,
+  boolean,
+  promise,
+} from ".";
+// index.spec.ts
+describe("matching types", function () {
+    it("unit (any)", function (done) {
+        const { patterns, exact } = match({
+            test: Symbol("something you never seen"),
+        });
+
+        switch (patterns) {
+            case exact({ test: unit }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("String", function (done) {
+        const { patterns, exact } = match({ test: "str" });
+
+        switch (patterns) {
+            case exact({ test: string }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Number", function (done) {
+        const { patterns, exact } = match({ test: 123 });
+
+        switch (patterns) {
+            case exact({ test: number }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Boolean", function (done) {
+        const { patterns, exact } = match({ test: false });
+
+        switch (patterns) {
+            case exact({ test: boolean }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("BigInt", function (done) {
+        const { patterns, exact } = match({ test: BigInt(123) });
+
+        switch (patterns) {
+            case exact({ test: bigint }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Array", function (done) {
+        const { patterns, exact } = match({ test: [] });
+
+        switch (patterns) {
+            case exact({ test: array }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Object", function (done) {
+        const { patterns, exact } = match({ test: {} });
+
+        switch (patterns) {
+            case exact({ test: object }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Nothing (undefined)", function (done) {
+        const { patterns, exact } = match({ test: undefined });
+
+        switch (patterns) {
+            case exact({ test: nothing }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Symbol", function (done) {
+        const { patterns, exact } = match({
+            test: Symbol("something you never seen 2"),
+        });
+
+        switch (patterns) {
+            case exact({ test: symbol }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Callable", function (done) {
+        const { patterns, exact } = match({
+            fn() {
+                return 1;
+            },
+            async fn2() {},
+        });
+
+        switch (patterns) {
+            case exact({ fn: callable, fn2: callable }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+    it("Promise", function (done) {
+        const { patterns, exact } = match({ p: Promise.resolve(42) });
+
+        switch (patterns) {
+            case exact({ p: promise }): {
+                done();
+                break;
+            }
+            default: {
+                throw new Error("matched nothing");
+            }
+        }
+    });
+});
+```
+
 ## Development
 
 ```bash
@@ -106,15 +293,6 @@ Feel free to check [issues page](https://github.com/piecioshka/switch-pattern/is
 ## Show your support
 
 Give a ⭐️ if this project helped you!
-
-## Related
-
-- [test-mocha-typescript](https://github.com/piecioshka/test-mocha-typescript)
-- [test-jasmine-typescript](https://github.com/piecioshka/test-jasmine-typescript)
-- [test-flowtype-vs-typescript](https://github.com/piecioshka/test-flowtype-vs-typescript)
-- [test-typescript-parcel](https://github.com/piecioshka/test-typescript-parcel)
-- [test-typescript-webpack](https://github.com/piecioshka/test-typescript-webpack)
-- [test-jest-typescript](https://github.com/piecioshka/test-jest-typescript)
 
 ## License
 

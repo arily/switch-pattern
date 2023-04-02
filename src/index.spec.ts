@@ -1,5 +1,18 @@
 import { assert } from 'console'
-import { callable, match, number, string, unit, object, array, bigint, nothing, symbol, boolean, promise } from '.'
+import {
+  callable,
+  match,
+  number,
+  string,
+  unit,
+  object,
+  array,
+  bigint,
+  nothing,
+  symbol,
+  boolean,
+  promise
+} from '.'
 
 const testBaseObject = { number: 1, string: 'string' }
 const testBaseArray = [1, 2, 'string'] as const
@@ -156,8 +169,13 @@ describe('Matcher', function () {
         case deep.some({ array: [number, 2, 2] }): {
           throw new Error('should not match because [3] is string')
         }
-        case deep.some({ l1: callable, array: [number, 2, 'string'] }): {
-          throw new Error('should not match because l1 is not callable')
+        case deep.some({
+          l1: callable,
+          array: [number, 2, 'string']
+        }): {
+          throw new Error(
+            'should not match because l1 is not callable'
+          )
         }
         case deep.some({ l1: string, array: [1, unit, 'string'] }): {
           done()
@@ -172,17 +190,34 @@ describe('Matcher', function () {
     it('deep object with deepExact', function (done) {
       switch (patterns) {
         // @ts-expect-error intended type error
-        case deep.exact({ l1: string, deep: { number: string, string } }): {
-          throw new Error('should not match because this pattern misses some members')
+        case deep.exact({
+          l1: string,
+          deep: { number: string, string }
+        }): {
+          throw new Error(
+            'should not match because this pattern misses some members'
+          )
         }
-        case deep.exact({ l1: string, deep: { number: string, string }, array: unit }): {
+        case deep.exact({
+          l1: string,
+          deep: { number: string, string },
+          array: unit
+        }): {
           throw new Error('should not match')
         }
         // @ts-expect-error intended type error
-        case deep.exact({ l1: string, deep: { number: 'string', string }, array: unit }): {
+        case deep.exact({
+          l1: string,
+          deep: { number: 'string', string },
+          array: unit
+        }): {
           throw new Error('should not match: no deep')
         }
-        case deep.exact({ l1: string, deep: { number, string }, array: unit }): {
+        case deep.exact({
+          l1: string,
+          deep: { number, string },
+          array: unit
+        }): {
           done()
           break
         }
@@ -193,10 +228,18 @@ describe('Matcher', function () {
     })
     it('array in object with deepExact', function (done) {
       switch (patterns) {
-        case deep.exact({ l1: bigint, array: [1, 2, unit], deep: unit }): {
+        case deep.exact({
+          l1: bigint,
+          array: [1, 2, unit],
+          deep: unit
+        }): {
           throw new Error('should not match')
         }
-        case deep.exact({ l1: string, array: [1, unit, 'string'], deep: unit }): {
+        case deep.exact({
+          l1: string,
+          array: [1, unit, 'string'],
+          deep: unit
+        }): {
           done()
           break
         }
@@ -322,7 +365,9 @@ describe('Matcher', function () {
 
   describe('matching types', function () {
     it('unit (any)', function (done) {
-      const { patterns, exact } = match({ test: Symbol('something you never seen') })
+      const { patterns, exact } = match({
+        test: Symbol('something you never seen')
+      })
 
       switch (patterns) {
         case exact({ test: unit }): {
@@ -426,7 +471,9 @@ describe('Matcher', function () {
       }
     })
     it('Symbol', function (done) {
-      const { patterns, exact } = match({ test: Symbol('something you never seen 2') })
+      const { patterns, exact } = match({
+        test: Symbol('something you never seen 2')
+      })
 
       switch (patterns) {
         case exact({ test: symbol }): {
@@ -439,7 +486,12 @@ describe('Matcher', function () {
       }
     })
     it('Callable', function (done) {
-      const {  patterns, exact } = match({ fn () { return 1 }, async fn2 () { } })
+      const { patterns, exact } = match({
+        fn () {
+          return 1
+        },
+        async fn2 () { }
+      })
 
       switch (patterns) {
         case exact({ fn: callable, fn2: callable }): {
@@ -452,7 +504,7 @@ describe('Matcher', function () {
       }
     })
     it('Promise', function (done) {
-      const {  patterns, exact } = match({ p: Promise.resolve(42) })
+      const { patterns, exact } = match({ p: Promise.resolve(42) })
 
       switch (patterns) {
         case exact({ p: promise }): {
