@@ -74,7 +74,7 @@ function $compareExact<T> (test: T, compareWith: T | symbol) {
   return compareBase(test, compareWith)
 }
 
-function $canDeep<T> (test$: T, compareWith$: T) {
+function canDeep<T> (test$: T, compareWith$: T) {
   return (Array.isArray(compareWith$) && Array.isArray(test$)) ||
   (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
@@ -124,7 +124,7 @@ export function match<T extends Record<any, any>> (t: T) {
     for (key in c) {
       if (!$compareSome!(_t[key], c[key])) {
         if (typeof c[key] === 'symbol') return
-        if ($canDeep!(_t[key], c[key])) {
+        if (canDeep(_t[key], c[key])) {
           const result = deepSome(c[key] as NonNullable<typeof c[typeof key]>, _t[key])
           if (!result) {
             return
@@ -145,7 +145,7 @@ export function match<T extends Record<any, any>> (t: T) {
     for (key in c) {
       if (!$compareExact!(_t[key], c[key])) {
         if (typeof c[key] === 'symbol') return
-        if ($canDeep!(_t[key], c[key])) {
+        if (canDeep(_t[key], c[key])) {
           const result = deepExact(c[key] as Exclude<TDeep, symbol>, _t[key])
           if (!result) {
             return
