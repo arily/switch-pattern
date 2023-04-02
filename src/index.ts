@@ -91,7 +91,18 @@ export type Exact<T> = {
 export type Some<T> = {
   [key in keyof T]?: (T[key] extends Record<any, any> ? Some<T[key]> : T[key]) | symbol;
 }
-export function match<T extends Record<any, any>> (t: T) {
+interface Methods<T extends Record<any, any>> {
+  some: (c: Some<T>) => Methods<T> | undefined
+  exact: (c: Exact<T>) => Methods<T> | undefined
+  deep: {
+    some: <T extends Record<any, any>>(c: Some<T>) => Methods<T> | undefined
+    exact: <T extends Record<any, any>>(c: Exact<T>) => Methods<T> | undefined
+  }
+}
+export interface Match<T extends Record<any, any>> extends Methods<T> {
+  patterns: Methods<T>
+}
+export function match<T extends Record<any, any>> (t: T): Match<T> {
   const context = {
     some (c: Some<T>) {
       let key: keyof T
@@ -125,7 +136,9 @@ export function match<T extends Record<any, any>> (t: T) {
     }
   }
 
-  function deepSome <TDeep extends T> (c: Some<TDeep>, _t: TDeep = t) {
+  type Context = typeof context
+
+  function deepSome <TDeep extends T> (c: Some<TDeep>, _t: TDeep = t): Context | undefined {
     let key: keyof TDeep
     for (key in c) {
       if (!$compareSome!(_t[key], c[key])) {
@@ -143,7 +156,7 @@ export function match<T extends Record<any, any>> (t: T) {
     return context
   }
 
-  function deepExact <TDeep extends T> (c: Exact<TDeep>, _t: TDeep = t) {
+  function deepExact <TDeep extends T> (c: Exact<TDeep>, _t: TDeep = t): Context | undefined {
     if (!exactKeys(_t, c)) {
       return
     }
