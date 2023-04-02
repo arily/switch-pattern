@@ -3,24 +3,99 @@
 [![npm version](https://badge.fury.io/js/switch-pattern.svg)](https://badge.fury.io/js/switch-pattern)
 [![downloads count](https://img.shields.io/npm/dt/switch-pattern.svg)](https://www.npmjs.com/package/switch-pattern)
 
-:hammer: Create simple project with TypeScript support
+pattern matching done right.
 
 ## Usage
 
-```bash
-npm create ts-project <name>
+example usage:
 
-# or
+```typescript
+import { match, number, string, unit } from ".";
+const { patterns, exact } = match([1, 2, "what"] as const);
+// use with switch
+switch (patterns) {
+    case exact([number, 2, string]): {
+        console.log("matched");
+        break;
+    }
+    default: {
+        throw new Error("boom");
+    }
+}
+```
 
-npx switch-pattern <name>
+### Top-tier TS & ESLint support
+
+```typescript
+import { match, number, string, unit } from ".";
+const { patterns, exact } = match([1, 2, "what"] as const);
+// use with switch
+switch (patterns) {
+    case exact([number, 2, string]): {
+        console.log("matched");
+        break;
+    }
+    // ESLint error: Duplicate case label.
+    case exact([number, 2, string]): {
+        console.log("matched");
+        break;
+    }
+    // TS Error: Type 'string' is not assignable to type 'symbol | 2'.
+    case exact([number, "2", string]): {
+        console.log("matched");
+        break;
+    }
+    /** TS Error: Argument of type '[symbol, 2]' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
+     * Source has 2 element(s) but target requires 3.
+     */
+    case exact([number, 2]): {
+        console.log("matched");
+        break;
+    }
+    /**
+     *  Argument of type '{ name: symbol; }' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
+     * Object literal may only specify known properties, and 'name' does not exist in type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
+     */
+    case exact({ name: string }): {
+        console.log("matched");
+        break;
+    }
+    default: {
+        throw new Error("boom");
+    }
+}
+```
+
+### Chainable
+
+```typescript
+switch (patterns) {
+    case exact([number, 2, string])?.some([unit, unit, "what"]): {
+        console.log("matched chained");
+        break;
+    }
+    default: {
+        throw new Error("boom");
+    }
+}
+```
+
+### Pattern matching deep values
+
+```typescript
+const {
+    deep: { exact },
+} = match([1, 2, "what", { number: 42 }] as const);
+
+if (exact([number, number, string, { number: number }])) {
+    console.log("matched deep");
+}
 ```
 
 ## Development
 
 ```bash
-npm install
-npm start       # compile src/index.ts to dist/index.js and execute *.js file [node]
-npm run dev     # execute src/index.ts [ts-node]
+yarn
 ```
 
 ## 🤝 Contributing
@@ -34,12 +109,12 @@ Give a ⭐️ if this project helped you!
 
 ## Related
 
-* [test-mocha-typescript](https://github.com/piecioshka/test-mocha-typescript)
-* [test-jasmine-typescript](https://github.com/piecioshka/test-jasmine-typescript)
-* [test-flowtype-vs-typescript](https://github.com/piecioshka/test-flowtype-vs-typescript)
-* [test-typescript-parcel](https://github.com/piecioshka/test-typescript-parcel)
-* [test-typescript-webpack](https://github.com/piecioshka/test-typescript-webpack)
-* [test-jest-typescript](https://github.com/piecioshka/test-jest-typescript)
+- [test-mocha-typescript](https://github.com/piecioshka/test-mocha-typescript)
+- [test-jasmine-typescript](https://github.com/piecioshka/test-jasmine-typescript)
+- [test-flowtype-vs-typescript](https://github.com/piecioshka/test-flowtype-vs-typescript)
+- [test-typescript-parcel](https://github.com/piecioshka/test-typescript-parcel)
+- [test-typescript-webpack](https://github.com/piecioshka/test-typescript-webpack)
+- [test-jest-typescript](https://github.com/piecioshka/test-jest-typescript)
 
 ## License
 

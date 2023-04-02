@@ -116,8 +116,12 @@ export function match<T extends Record<any, any>> (t: T) {
     },
 
     deep: {
-      some: deepSome,
-      exact: deepExact
+      some (c: Some<T>) {
+        return deepSome(c)
+      },
+      exact (c: Exact<T>) {
+        return deepExact(c)
+      }
     }
   }
 
