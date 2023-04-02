@@ -43,8 +43,7 @@
         "url": "git@github.com:arily/switch-pattern.git"
     },
     "files": [
-        "bin",
-        "src",
+        "dist",
         "LICENSE",
         "package.json",
         "README.md",
@@ -52,11 +51,8 @@
     ],
     "keywords": [
         "typescript",
-        "playground",
-        "create",
-        "simple",
-        "project",
-        "seed"
+        "pattern-matching",
+        "switch"
     ],
     "module": "dist/esm/index.js",
     "main": "dist/cjs/index.js"
