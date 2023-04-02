@@ -73,20 +73,30 @@ const _minify = async (code) => {
 }
 const output = join(__dirname, '../output/')
 const dist = join(__dirname, '../dist/')
+
+async function job (code) {
+  console.info('input size:', size(code.length))
+  code = await _minify(code)
+  console.info('minified code size:', size(code.length))
+  return code
+}
+
+async function writeBack (path, code) {
+  ensureDirectoryExistence(path)
+  writeFile(path, code, 'utf-8')
+}
 getFiles(output).then(paths => {
   paths.map(async path => {
-    if (path.includes('.macro.js')) return
-    let code = await readFile(path, 'utf-8')
-    console.info('input size:', size(code.length))
-
-    code = await _minify(code)
-
-    console.info('minified code size:', size(code.length))
+    // omit macros (files are empty)
+    if (path.includes('.macro.')) return
 
     const _path = relative(output, path)
     const __path = join(dist, _path)
     // console.log(path, _path, __path)
-    ensureDirectoryExistence(__path)
-    writeFile(__path, code, 'utf-8')
+    let code = await readFile(path, 'utf-8')
+    if (!path.includes('.d.ts')) {
+      code = await job(code)
+    }
+    return writeBack(__path, code)
   })
 })

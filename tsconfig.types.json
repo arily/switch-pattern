@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "suppressImplicitAnyIndexErrors": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "output"
+  },
+  "exclude": [
+    "src/**.spec.ts",
+    "src/transforms/*",
+  ],
+  "include": [
+    "src/index.ts",
+  ]
+}

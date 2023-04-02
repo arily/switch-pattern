@@ -1,7 +1,7 @@
 {
     "name": "switch-pattern",
     "description": "pattern matching done right",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "license": "MIT",
     "author": {
         "name": "arily",
@@ -11,9 +11,10 @@
         "clear": "rm -rf dist && rm -rf output",
         "clear:all": "rm -rf node_modules/ && npm run clear",
         "test": "nyc  ts-mocha -p tsconfig.json src/**/*.spec.ts",
-        "build-only": "npm run clear && ttsc -p tsconfig.cjs.json; ttsc -p tsconfig.esm.json;",
-        "build": "npm run build-only && node scripts/minify.mjs",
-        "build:test": "npm run build-only && ttsc -p tsconfig.json; node scripts/minify.mjs",
+        "build:code": "npm run clear && ttsc -p tsconfig.cjs.json; ttsc -p tsconfig.esm.json;",
+        "build:declaration": "ttsc -p tsconfig.types.json;",
+        "build": "npm run build:code && npm run build:declaration && node scripts/minify.mjs",
+        "build:test": "npm run build:code && ttsc -p tsconfig.json; node scripts/minify.mjs",
         "build:clean": "rn -rf output"
     },
     "dependencies": {},
@@ -54,6 +55,7 @@
         "pattern-matching",
         "switch"
     ],
+    "types": "dist/index.d.ts",
     "module": "dist/esm/index.js",
     "main": "dist/cjs/index.js"
 }
