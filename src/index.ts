@@ -93,36 +93,32 @@ export type Some<T> = {
 }
 export function match<T extends Record<any, any>> (t: T) {
   const context = {
-    some,
-    exact,
+    some (c: Some<T>) {
+      let key: keyof T
+      for (key in c) {
+        if (!$compareSome!(t[key], c[key])) {
+          return
+        }
+      }
+      return context
+    },
+    exact (c: Exact<T>) {
+      if (!exactKeys(t, c)) {
+        return
+      }
+      let key: keyof T
+      for (key in c) {
+        if (!$compareExact!(t[key], c[key])) {
+          return
+        }
+      }
+      return context
+    },
 
     deep: {
       some: deepSome,
       exact: deepExact
     }
-  }
-
-  function some (c: Some<T>) {
-    let key: keyof T
-    for (key in c) {
-      if (!$compareSome!(t[key], c[key])) {
-        return
-      }
-    }
-    return context
-  }
-
-  function exact (c: Exact<T>) {
-    if (!exactKeys(t, c)) {
-      return
-    }
-    let key: keyof T
-    for (key in c) {
-      if (!$compareExact!(t[key], c[key])) {
-        return
-      }
-    }
-    return context
   }
 
   function deepSome <TDeep extends T> (c: Some<TDeep>, _t: TDeep = t) {
