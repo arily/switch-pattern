@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "output/test",
     "types": [
-      "@types/mocha"
+      "@types/mocha",
+      "@types/node"
     ]
   },
   "include": [
