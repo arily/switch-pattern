@@ -80,6 +80,7 @@ function $canDeep<T> (test$: T, compareWith$: T) {
 }
 
 function $exactKeys<T extends Record<any, any>> (test$: T, compareWith$: T) {
+  if (Array.isArray(test$) && Array.isArray(compareWith$)) { return test$.length === compareWith$.length }
   const keyofC = Object.keys(compareWith$)
   return Object.keys(test$).every(k => keyofC.includes(k))
 }
