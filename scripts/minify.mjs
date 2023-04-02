@@ -75,6 +75,7 @@ const output = join(__dirname, '../output/')
 const dist = join(__dirname, '../dist/')
 getFiles(output).then(paths => {
   paths.map(async path => {
+    if (path.includes('.macro.js')) return
     let code = await readFile(path, 'utf-8')
     console.info('input size:', size(code.length))
 
