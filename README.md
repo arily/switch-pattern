@@ -58,7 +58,8 @@ switch (patterns) {
         console.log("matched");
         break;
     }
-    /** TS Error: Argument of type '[symbol, 2]' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
+    /** 
+     * TS Error: Argument of type '[symbol, 2]' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
      * Source has 2 element(s) but target requires 3.
      */
     case exact([number, 2]): {
