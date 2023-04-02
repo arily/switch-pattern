@@ -12,7 +12,7 @@
         "clear:all": "rm -rf node_modules/ && npm run clear",
         "test": "nyc  ts-mocha -p tsconfig.json src/**/*.spec.ts",
         "build:code": "npm run clear && ttsc -p tsconfig.cjs.json; ttsc -p tsconfig.esm.json;",
-        "build:declaration": "ttsc -p tsconfig.types.json;",
+        "build:declaration": "tsc -p tsconfig.types.json;",
         "build": "npm run build:code && npm run build:declaration && node scripts/minify.mjs",
         "build:test": "npm run build:code && ttsc -p tsconfig.json; node scripts/minify.mjs",
         "build:clean": "rn -rf output"
@@ -25,6 +25,7 @@
         "@types/mocha": "^10.0.1",
         "@types/node": "^18.15.11",
         "@typescript-eslint/eslint-plugin": "^5.43.0",
+        "dts-gen": "^0.6.1",
         "eslint": "^8.0.1",
         "eslint-config-standard-with-typescript": "^34.0.1",
         "eslint-plugin-import": "^2.25.2",
@@ -37,7 +38,7 @@
         "ts-mocha": "^10.0.0",
         "ts-node": "^8.4.1",
         "ttypescript": "^1.5.15",
-        "typescript": "^4.9.5"
+        "typescript": "4.9.5"
     },
     "repository": {
         "type": "git",

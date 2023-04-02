@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { $createContext, $reverse } from './transforms/index.macro'
+import { $reverse } from './transforms/index.macro'
 import { $$ts } from 'ts-macros'
 
 export const string = Symbol('string')
@@ -44,25 +44,21 @@ function $undefined (test: any, comparedWith: any) {
   return (test === undefined && comparedWith === nothing)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const reverseTypes = $reverse!(types)
-function $symbol (test: any, comparedWith: symbol) {
-  return Array.isArray(test)
-    ? comparedWith === array
-    : test instanceof Function
-      ? comparedWith === callable
-      : test instanceof Promise
-        ? comparedWith === promise
-        // ts-macro bug: typeof get lost
-        : $$ts!('(typeof test === reverseTypes[comparedWith])')
-}
-
 function compareBase<T> (test?: T, comparedWith?: T | symbol) {
   return $compareWithUnit!(test, comparedWith)
     || $sameReference!(test, comparedWith)
     || $undefined!(test, comparedWith)
     // match types
-    || (typeof comparedWith === 'symbol' && $symbol!(test, comparedWith)
+    || (typeof comparedWith === 'symbol' && (Array.isArray(test)
+      ? comparedWith === array
+      : test instanceof Function
+        ? comparedWith === callable
+        : test instanceof Promise
+          ? comparedWith === promise
+          // eslint-disable-next-line valid-typeof
+          : (typeof test === reverseTypes[comparedWith])
+    )
     )
 }
 
@@ -79,105 +75,113 @@ function canDeep<T> (test$: T, compareWith$: T) {
   || (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
-function exactKeys<T extends Record<any, any>> (test$: T, compareWith$: T) {
+type Obj = Record<any, any>
+
+function exactKeys<T extends Obj> (test$: T, compareWith$: T) {
   if (Array.isArray(test$) && Array.isArray(compareWith$)) { return test$.length === compareWith$.length }
   const keyofC = Object.keys(compareWith$)
   return Object.keys(test$).every(k => keyofC.includes(k))
 }
 
 export type Exact<T> = {
-  [key in keyof T]: (T[key] extends Record<any, any> ? Exact<T[key]> : T[key]) | symbol;
+  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | symbol;
 }
 export type Some<T> = {
-  [key in keyof T]?: (T[key] extends Record<any, any> ? Some<T[key]> : T[key]) | symbol;
+  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | symbol;
 }
-interface Methods<T extends Record<any, any>> {
-  some: (c: Some<T>) => Methods<T> | undefined
-  exact: (c: Exact<T>) => Methods<T> | undefined
-  deep: {
-    some: <T extends Record<any, any>>(c: Some<T>) => Methods<T> | undefined
-    exact: <T extends Record<any, any>>(c: Exact<T>) => Methods<T> | undefined
-  }
-}
-export interface Match<T extends Record<any, any>> extends Methods<T> {
-  patterns: Methods<T>
-}
-export function match<T extends Record<any, any>> (t: T): Match<T> {
-  const context = {
-    some (c: Some<T>) {
-      let key: keyof T
-      for (key in c) {
-        if (!$compareSome!(t[key], c[key])) {
+
+function deepSome <TDeep extends Obj> (c: Some<TDeep>, _t: TDeep) {
+  let key: keyof TDeep
+  for (key in c) {
+    if (!$compareSome!(_t[key], c[key])) {
+      if (typeof c[key] === 'symbol') return
+      if (canDeep(_t[key], c[key])) {
+        const result = deepSome(c[key] as NonNullable<typeof c[typeof key]>, _t[key])
+        if (!result) {
           return
         }
-      }
-      return context
-    },
-    exact (c: Exact<T>) {
-      if (!exactKeys(t, c)) {
+      } else {
         return
       }
-      let key: keyof T
-      for (key in c) {
-        if (!$compareExact!(t[key], c[key])) {
+    }
+  }
+  return true
+}
+
+function deepExact <TDeep extends Obj> (c: Exact<TDeep>, _t: TDeep) {
+  if (!exactKeys(_t, c)) {
+    return
+  }
+  let key: keyof TDeep
+  for (key in c) {
+    if (!$compareExact!(_t[key], c[key])) {
+      if (typeof c[key] === 'symbol') return
+      if (canDeep(_t[key], c[key])) {
+        const result = deepExact(c[key] as Exclude<TDeep, symbol>, _t[key])
+        if (!result) {
           return
         }
-      }
-      return context
-    },
-
-    deep: {
-      some (c: Some<T>) {
-        return deepSome(c)
-      },
-      exact (c: Exact<T>) {
-        return deepExact(c)
+      } else {
+        return
       }
     }
   }
+  return true
+}
+export class Match<T extends Obj> {
+  t: T
 
-  type Context = typeof context
+  constructor (t: T) {
+    this.t = t
 
-  function deepSome <TDeep extends T> (c: Some<TDeep>, _t: TDeep = t): Context | undefined {
-    let key: keyof TDeep
+    this.some = this.some.bind(this)
+    this.exact = this.exact.bind(this)
+  }
+
+  get deep (): {
+    some: Match<T>['deepSome']
+    exact: Match<T>['deepExact']
+  } {
+    return {
+      some: this.deepSome.bind(this),
+      exact: this.deepExact.bind(this)
+    }
+  }
+
+  some (c: Some<T>) {
+    let key: keyof T
     for (key in c) {
-      if (!$compareSome!(_t[key], c[key])) {
-        if (typeof c[key] === 'symbol') return
-        if (canDeep(_t[key], c[key])) {
-          const result = deepSome(c[key] as NonNullable<typeof c[typeof key]>, _t[key])
-          if (!result) {
-            return
-          }
-        } else {
-          return
-        }
+      if (!$compareSome!(this.t[key], c[key])) {
+        return
       }
     }
-    return context
+    return this
   }
 
-  function deepExact <TDeep extends T> (c: Exact<TDeep>, _t: TDeep = t): Context | undefined {
-    if (!exactKeys(_t, c)) {
+  exact (c: Exact<T>) {
+    if (!exactKeys(this.t, c)) {
       return
     }
     let key: keyof T
     for (key in c) {
-      if (!$compareExact!(_t[key], c[key])) {
-        if (typeof c[key] === 'symbol') return
-        if (canDeep(_t[key], c[key])) {
-          const result = deepExact(c[key] as Exclude<TDeep, symbol>, _t[key])
-          if (!result) {
-            return
-          }
-        } else {
-          return
-        }
+      if (!$compareExact!(this.t[key], c[key])) {
+        return
       }
     }
-    return context
+    return this
   }
 
-  return $createContext!(context)
+  deepSome (c: Some<T>): this | undefined {
+    return deepSome(c, this.t) ? this : undefined
+  }
+
+  deepExact (c: Exact<T>): this | undefined {
+    return deepExact(c, this.t) ? this : undefined
+  }
+
+  get patterns () {
+    return this
+  }
 }
 
-export default match
+export const match = <T extends Obj>(t: T) => new Match(t)

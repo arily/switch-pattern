@@ -3,7 +3,6 @@
   "compilerOptions": {
     "outDir": "output/esm",
     "module": "ES2015",
-    "suppressImplicitAnyIndexErrors": true,
   },
   "exclude": [
     "src/**.spec.ts",
