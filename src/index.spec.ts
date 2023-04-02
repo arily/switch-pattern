@@ -205,9 +205,9 @@ describe('Matcher', function () {
         }): {
           throw new Error('should not match')
         }
-        // @ts-expect-error intended type error
         case deep.exact({
           l1: string,
+          // @ts-expect-error intended type error
           deep: { number: 'string', string },
           array: unit
         }): {
