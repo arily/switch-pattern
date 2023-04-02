@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { $reverse } from './transforms/index.macro'
-import { $$ts } from 'ts-macros'
 
 export const string = Symbol('string')
 export const number = Symbol('number')
