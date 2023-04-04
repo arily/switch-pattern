@@ -138,12 +138,14 @@ export class Match<T extends Obj> {
 
     this.some = this.some.bind(this)
     this.exact = this.exact.bind(this)
+    this.deepSome = this.deepSome.bind(this)
+    this.deepExact = this.deepExact.bind(this)
   }
 
   get deep () {
     return {
-      some: this.deepSome.bind(this),
-      exact: this.deepExact.bind(this)
+      some: this.deepSome,
+      exact: this.deepExact
     }
   }
 
