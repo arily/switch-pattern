@@ -49,15 +49,18 @@ function compareBase<T> (test?: T, comparedWith?: T | symbol) {
     || $sameReference!(test, comparedWith)
     || $undefined!(test, comparedWith)
     // match types
-    || (typeof comparedWith === 'symbol' && (Array.isArray(test)
-      ? comparedWith === array
-      : test instanceof Function
-        ? comparedWith === callable
-        : test instanceof Promise
-          ? comparedWith === promise
-          // eslint-disable-next-line valid-typeof
-          : (typeof test === reverseTypes[comparedWith])
-    )
+    || (
+      typeof comparedWith === 'symbol'
+      && (
+        Array.isArray(test)
+          ? comparedWith === array
+          : test instanceof Function
+            ? comparedWith === callable
+            : test instanceof Promise
+              ? comparedWith === promise
+            // eslint-disable-next-line valid-typeof
+              : (typeof test === reverseTypes[comparedWith])
+      )
     )
 }
 
