@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { $reverse } from './transforms/index.macro'
 
 export const string = Symbol('string')
 export const number = Symbol('number')
@@ -14,22 +13,22 @@ export const symbol = Symbol('symbol')
 export const array = Symbol('array')
 export const promise = Symbol('promise')
 
-const types = {
-  unit,
+// const types = {
+//   unit,
 
-  string,
-  number,
-  nothing,
-  object,
-  bigint,
-  boolean,
-  callable,
-  symbol,
+//   string,
+//   number,
+//   nothing,
+//   object,
+//   bigint,
+//   boolean,
+//   callable,
+//   symbol,
 
-  promise,
+//   promise,
 
-  array
-}
+//   array
+// }
 
 function $compareWithUnit (test: any, comparedWith: any) {
   return (comparedWith === unit)
@@ -43,8 +42,22 @@ function $undefined (test: any, comparedWith: any) {
   return (test === undefined && comparedWith === nothing)
 }
 
-const reverseTypes = $reverse!(types)
-function compareBase<T> (test?: T, comparedWith?: T | symbol) {
+const reverseTypes = {
+  [unit]: 'unit',
+  [string]: 'string',
+  [number]: 'number',
+  [nothing]: 'nothing',
+  [object]: 'object',
+  [bigint]: 'bigint',
+  [boolean]: 'boolean',
+  [callable]: 'callable',
+  [symbol]: 'symbol',
+  [promise]: 'promise',
+  [array]: 'array'
+} as const
+
+type Types = keyof typeof reverseTypes
+function compareBase<T> (test?: T, comparedWith?: T | Types) {
   return $compareWithUnit!(test, comparedWith)
     || $sameReference!(test, comparedWith)
     || $undefined!(test, comparedWith)
@@ -58,17 +71,17 @@ function compareBase<T> (test?: T, comparedWith?: T | symbol) {
             ? comparedWith === callable
             : test instanceof Promise
               ? comparedWith === promise
-            // eslint-disable-next-line valid-typeof
-              : (typeof test === reverseTypes[comparedWith])
+              // eslint-disable-next-line valid-typeof
+              : (typeof test === reverseTypes[comparedWith as Exclude<typeof comparedWith, T>])
       )
     )
 }
 
-function $compareSome<T> (test?: T, compareWith?: T | symbol) {
+function $compareSome<T> (test?: T, compareWith?: T | Types) {
   return compareBase(test, compareWith)
 }
 
-function $compareExact<T> (test: T, compareWith: T | symbol) {
+function $compareExact<T> (test: T, compareWith: T | Types) {
   return compareBase(test, compareWith)
 }
 
@@ -86,10 +99,10 @@ function exactKeys<T extends Obj> (test$: T, compareWith$: T) {
 }
 
 export type Exact<T> = {
-  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | symbol;
+  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | Types;
 }
 export type Some<T> = {
-  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | symbol;
+  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | Types;
 }
 
 function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
@@ -119,7 +132,7 @@ function deepExact <TDeep extends Obj> (_t: TDeep, c: Exact<TDeep>) {
     if (!$compareExact!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
       if (canDeep(_t[key], c[key])) {
-        const result = deepExact(_t[key], c[key] as Exclude<TDeep, symbol>)
+        const result = deepExact(_t[key], c[key] as Exclude<TDeep, Types>)
         if (!result) {
           return
         }
@@ -142,7 +155,10 @@ export class Match<T extends Obj> {
     this.deepExact = this.deepExact.bind(this)
   }
 
-  get deep () {
+  get deep (): {
+    some: Match<T>['deepSome']
+    exact: Match<T>['deepExact']
+  } {
     return {
       some: this.deepSome,
       exact: this.deepExact
