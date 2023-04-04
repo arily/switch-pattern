@@ -92,13 +92,13 @@ export type Some<T> = {
   [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | symbol;
 }
 
-function deepSome <TDeep extends Obj> (c: Some<TDeep>, _t: TDeep) {
+function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
   let key: keyof TDeep
   for (key in c) {
     if (!$compareSome!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
       if (canDeep(_t[key], c[key])) {
-        const result = deepSome(c[key] as NonNullable<typeof c[typeof key]>, _t[key])
+        const result = deepSome(_t[key], c[key] as NonNullable<typeof c[typeof key]>)
         if (!result) {
           return
         }
@@ -110,7 +110,7 @@ function deepSome <TDeep extends Obj> (c: Some<TDeep>, _t: TDeep) {
   return true
 }
 
-function deepExact <TDeep extends Obj> (c: Exact<TDeep>, _t: TDeep) {
+function deepExact <TDeep extends Obj> (_t: TDeep, c: Exact<TDeep>) {
   if (!exactKeys(_t, c)) {
     return
   }
@@ -119,7 +119,7 @@ function deepExact <TDeep extends Obj> (c: Exact<TDeep>, _t: TDeep) {
     if (!$compareExact!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
       if (canDeep(_t[key], c[key])) {
-        const result = deepExact(c[key] as Exclude<TDeep, symbol>, _t[key])
+        const result = deepExact(_t[key], c[key] as Exclude<TDeep, symbol>)
         if (!result) {
           return
         }
@@ -171,11 +171,11 @@ export class Match<T extends Obj> {
   }
 
   deepSome (c: Some<T>): this | undefined {
-    return deepSome(c, this.t) ? this : undefined
+    return deepSome(this.t, c) ? this : undefined
   }
 
   deepExact (c: Exact<T>): this | undefined {
-    return deepExact(c, this.t) ? this : undefined
+    return deepExact(this.t, c) ? this : undefined
   }
 
   get patterns () {
