@@ -137,10 +137,7 @@ export class Match<T extends Obj> {
     this.exact = this.exact.bind(this)
   }
 
-  get deep (): {
-    some: Match<T>['deepSome']
-    exact: Match<T>['deepExact']
-  } {
+  get deep () {
     return {
       some: this.deepSome.bind(this),
       exact: this.deepExact.bind(this)
