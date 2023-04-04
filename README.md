@@ -28,12 +28,16 @@ switch (patterns) {
 
 ```typescript
 const match = <T>(input: T): Context => {
-  some(compareWith: Partial<T>): Context | void
-  exact(compareWith: T): Context | void
+  some(compareWith: Partial<T>): Context | undefined
+  exact(compareWith: T): Context | undefined
   deep: {
-    some(compareWith: Partial<T>): Context | void
-    exact(compareWith: T): Context | void
+    some(compareWith: Partial<T>): Context | undefined
+    exact(compareWith: T): Context | undefined
   }
+  // same as deep.some
+  deepSome(compareWith: Partial<T>): Context | undefined
+  // same as deep.exact
+  deepExact(compareWith: T): Context | undefined
 }
 ```
 
@@ -58,7 +62,7 @@ switch (patterns) {
         console.log("matched");
         break;
     }
-    /** 
+    /**
      * TS Error: Argument of type '[symbol, 2]' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
      * Source has 2 element(s) but target requires 3.
      */
@@ -110,18 +114,18 @@ if (exact([number, number, string, { number: number }])) {
 
 ```typescript
 import {
-  callable,
-  match,
-  number,
-  string,
-  unit,
-  object,
-  array,
-  bigint,
-  nothing,
-  symbol,
-  boolean,
-  promise,
+    callable,
+    match,
+    number,
+    string,
+    unit,
+    object,
+    array,
+    bigint,
+    nothing,
+    symbol,
+    boolean,
+    promise,
 } from ".";
 // index.spec.ts
 describe("matching types", function () {
