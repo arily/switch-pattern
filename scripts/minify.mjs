@@ -95,6 +95,7 @@ getFiles(output).then(paths => {
     // console.log(path, _path, __path)
     let code = await readFile(path, 'utf-8')
     if (!path.includes('.d.ts')) {
+      console.log('job: ', __path)
       code = await job(code)
     }
     return writeBack(__path, code)

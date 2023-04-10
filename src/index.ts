@@ -57,7 +57,7 @@ const reverseTypes = {
 } as const
 
 type Types = keyof typeof reverseTypes
-function compareBase<T> (test?: T, comparedWith?: T | Types) {
+function $compareBase<T> (test?: T, comparedWith?: T | Types) {
   return $compareWithUnit!(test, comparedWith)
     || $sameReference!(test, comparedWith)
     || $undefined!(test, comparedWith)
@@ -78,14 +78,14 @@ function compareBase<T> (test?: T, comparedWith?: T | Types) {
 }
 
 function $compareSome<T> (test?: T, compareWith?: T | Types) {
-  return compareBase(test, compareWith)
+  return $compareBase!(test, compareWith)
 }
 
 function $compareExact<T> (test: T, compareWith: T | Types) {
-  return compareBase(test, compareWith)
+  return $compareBase!(test, compareWith)
 }
 
-function canDeep<T> (test$: T, compareWith$: T) {
+function $canDeep<T> (test$: T, compareWith$: T) {
   return (Array.isArray(compareWith$) && Array.isArray(test$))
   || (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
@@ -110,7 +110,7 @@ function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
   for (key in c) {
     if (!$compareSome!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
-      if (canDeep(_t[key], c[key])) {
+      if ($canDeep!(_t[key], c[key])) {
         const result = deepSome(_t[key], c[key] as NonNullable<typeof c[typeof key]>)
         if (!result) {
           return
@@ -131,7 +131,7 @@ function deepExact <TDeep extends Obj> (_t: TDeep, c: Exact<TDeep>) {
   for (key in c) {
     if (!$compareExact!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
-      if (canDeep(_t[key], c[key])) {
+      if ($canDeep!(_t[key], c[key])) {
         const result = deepExact(_t[key], c[key] as Exclude<TDeep, Types>)
         if (!result) {
           return
