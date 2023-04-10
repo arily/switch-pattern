@@ -1,6 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+type Obj = Record<any, any>
+
+export type Exact<T> = {
+  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | Types;
+}
+export type Some<T> = {
+  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | Types;
+}
+
 export const string = Symbol('string')
 export const number = Symbol('number')
 export const object = Symbol('object')
@@ -12,23 +21,6 @@ export const callable = Symbol('function')
 export const symbol = Symbol('symbol')
 export const array = Symbol('array')
 export const promise = Symbol('promise')
-
-// const types = {
-//   unit,
-
-//   string,
-//   number,
-//   nothing,
-//   object,
-//   bigint,
-//   boolean,
-//   callable,
-//   symbol,
-
-//   promise,
-
-//   array
-// }
 
 function $compareWithUnit (test: any, comparedWith: any) {
   return (comparedWith === unit)
@@ -90,19 +82,10 @@ function $canDeep<T> (test$: T, compareWith$: T) {
   || (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
-type Obj = Record<any, any>
-
 function exactKeys<T extends Obj> (test$: T, compareWith$: T) {
   if (Array.isArray(test$) && Array.isArray(compareWith$)) { return test$.length === compareWith$.length }
   const keyofC = Object.keys(compareWith$)
   return Object.keys(test$).every(k => keyofC.includes(k))
-}
-
-export type Exact<T> = {
-  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | Types;
-}
-export type Some<T> = {
-  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | Types;
 }
 
 function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
@@ -143,6 +126,7 @@ function deepExact <TDeep extends Obj> (_t: TDeep, c: Exact<TDeep>) {
   }
   return true
 }
+// shamefully using class due to typescript limit (or d.ts would be any due to circular reference, "this" helps.)
 export class Match<T extends Obj> {
   t: T
 
