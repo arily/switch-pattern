@@ -28,40 +28,6 @@ export const custom = <T>(cb: MatchCallbackDef<T>) => {
   return Object.assign(cb, { __custom: true } as const)
 }
 
-function $unit<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof unit> {
-  return (comparedWith === unit)
-}
-
-/**
- * checks for
- * - same reference
- * - null
- * - primitive value
- */
-function $strictEq<T> (test: T, comparedWith: T) {
-  return (test === comparedWith)
-}
-
-/**
- * check for primitive nothing:
- * - null
- * - undefined
- */
-function $nothing<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof nothing> {
-  return (
-    (test === undefined || test === null)
-    && comparedWith === nothing
-  )
-}
-
-function $custom<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>) {
-  return (
-    typeof comparedWith === 'function'
-    && '__custom' in comparedWith
-    && comparedWith(test)
-  )
-}
-
 const reverseTypes = {
   [unit]: 'unit',
   [string]: 'string',
@@ -99,6 +65,40 @@ type Types<T> =
                     ? typeof nothing
                     : never
 ) | typeof unit
+
+function $unit<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof unit> {
+  return (comparedWith === unit)
+}
+
+/**
+ * checks for
+ * - same reference
+ * - null
+ * - primitive value
+ */
+function $strictEq<T> (test: T, comparedWith: T) {
+  return (test === comparedWith)
+}
+
+/**
+ * check for primitive nothing:
+ * - null
+ * - undefined
+ */
+function $nothing<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof nothing> {
+  return (
+    (test === undefined || test === null)
+    && comparedWith === nothing
+  )
+}
+
+function $custom<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>) {
+  return (
+    typeof comparedWith === 'function'
+    && '__custom' in comparedWith
+    && comparedWith(test)
+  )
+}
 
 function $compareBase<T> (test: T, comparedWith: T | MatchCallback<T> | Types<T>) {
   return $unit!(test, comparedWith)

@@ -3,7 +3,7 @@ import * as url from 'url'
 import { join, relative, resolve, dirname } from 'path'
 import { readFile, writeFile, readdir } from 'fs/promises'
 import { existsSync, mkdirSync } from 'fs'
-import { build } from 'esbuild'
+import { minify } from 'terser'
 
 async function getFiles (dir) {
   const dirents = await readdir(dir, { withFileTypes: true })
@@ -40,32 +40,43 @@ function ensureDirectoryExistence (filePath) {
   mkdirSync(_dirname)
 }
 
-const _minify = async (code, format) => {
-  const result = await build({
-    stdin: {
-      contents: code
+const _minify = async (code) => {
+  const result = await minify(code, {
+    ecma: 2020,
+    compress: {
+      arguments: true,
+      hoist_props: true,
+      keep_fnames: false,
+      expression: true,
+      booleans: true,
+      module: true,
+      inline: true,
+      // unsafe_arrows: true,
+      // unsafe_comps: true,
+      // unsafe_Function: true,
+      // unsafe_math: true,
+      // unsafe_methods: true,
+      passes: 3
     },
-    format,
-    write: false,
-    bundle: false,
-    minify: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
-    minifyWhitespace: true
+    mangle: {
+      eval: true,
+      toplevel: true
+    },
+    format: {
+      wrap_func_args: false
+    }
   })
-  if (result.errors.length > 0) {
-    console.error(result.errors)
+  if (!result.code) {
     return code
   }
-  return result.outputFiles[0].text
+  return result.code
 }
 const output = join(__dirname, '../output/')
 const dist = join(__dirname, '../dist/')
 
-async function job (code, path) {
-  const esm = path.includes('esm/') ? 'esm' : undefined
+async function job (code) {
   console.info('input size:', size(code.length))
-  code = await _minify(code, esm)
+  code = await _minify(code)
   console.info('minified code size:', size(code.length))
   return code
 }
@@ -85,7 +96,7 @@ getFiles(output).then(paths => {
     let code = await readFile(path, 'utf-8')
     if (!path.includes('.d.ts')) {
       console.log('job: ', __path)
-      code = await job(code, __path)
+      code = await job(code)
     }
     return writeBack(__path, code)
   })

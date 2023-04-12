@@ -26,6 +26,7 @@
         "@types/node": "^18.15.11",
         "@typescript-eslint/eslint-plugin": "^5.57.1",
         "dts-gen": "^0.6.1",
+        "esbuild": "^0.17.16",
         "eslint": "^8.38.0",
         "eslint-config-standard-with-typescript": "^34.0.1",
         "eslint-plugin-import": "^2.27.5",
