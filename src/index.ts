@@ -52,7 +52,7 @@ function $nothing<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): c
 }
 
 function $custom<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>) {
-  return typeof comparedWith === 'function' && '__custom' in comparedWith && comparedWith(test)
+  return (typeof comparedWith === 'function' && '__custom' in comparedWith && comparedWith(test))
 }
 
 const reverseTypes = {
@@ -128,7 +128,9 @@ function $canDeep<T> (test$: T, compareWith$: T) {
 }
 
 function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T>) {
-  if (Array.isArray(test$) && Array.isArray(compareWith$)) { return test$.length === compareWith$.length }
+  if (Array.isArray(test$) && Array.isArray(compareWith$)) {
+    return test$.length === compareWith$.length
+  }
   const keyofC = Object.keys(compareWith$)
   return Object.keys(test$).every(k => keyofC.includes(k))
 }
@@ -218,11 +220,11 @@ export class Match<T extends Obj> {
   }
 
   deepSome (c: Some<T>): this | undefined {
-    return deepSome(this.t, c) ? this : undefined
+    return deepSome(this.t, c) && this
   }
 
   deepExact (c: Exact<T>): this | undefined {
-    return deepExact(this.t, c) ? this : undefined
+    return deepExact(this.t, c) && this
   }
 
   get patterns () {
