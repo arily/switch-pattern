@@ -17,13 +17,13 @@ import {
   custom
 } from '.'
 
-const testBaseObject = { number: 1, string: 'string' }
+const testBaseObject = { number: 1, string: 'string' } as const
 const testBaseArray = [1, 2, 'string'] as const
 const testDeepObject = {
   deep: testBaseObject,
   array: testBaseArray,
   l1: '1'
-}
+} as const
 const testDeepArray = [testBaseObject, testBaseArray] as const
 describe('Matcher', function () {
   describe('create pattern matching context', function () {
@@ -40,6 +40,7 @@ describe('Matcher', function () {
     const { patterns, some, exact } = match(testBaseObject)
     it('some', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case some({ number: 2 }): {
           throw new Error('should not match')
         }
@@ -68,13 +69,18 @@ describe('Matcher', function () {
         }
 
         case exact({
+          // @ts-expect-error intended type error
           number: 2,
           // @ts-expect-error intended type error
           string: 2
         }): {
           throw new Error('should not match')
         }
-        case exact({ number: 2, string: unit }): {
+        case exact({
+          // @ts-expect-error intended type error
+          number: 2,
+          string: unit
+        }): {
           throw new Error('should not match')
         }
         case exact({ number: 1, string: 'string' }): {
@@ -97,7 +103,8 @@ describe('Matcher', function () {
       switch (patterns) {
         case some([
           // @ts-expect-error intended type error
-          string, 2
+          string,
+          2
         ]): {
           throw new Error('should not match')
         }
@@ -186,7 +193,7 @@ describe('Matcher', function () {
       switch (patterns) {
         case deep.some({
           array: [
-          // @ts-expect-error intended type error
+            // @ts-expect-error intended type error
             2,
             2,
             unit
@@ -338,10 +345,12 @@ describe('Matcher', function () {
     })
     it('deep object with deepSome', function (done) {
       switch (patterns) {
-        case deep.some([{
-          // @ts-expect-error intended type error
-          number: string
-        }]): {
+        case deep.some([
+          {
+            // @ts-expect-error intended type error
+            number: string
+          }
+        ]): {
           throw new Error('should not match')
         }
         case deep.some([{ number: 1 }]): {
@@ -355,18 +364,24 @@ describe('Matcher', function () {
     })
     it('array in object with deepSome', function (done) {
       switch (patterns) {
-        case deep.some([unit, [
-          // @ts-expect-error intended type error
-          string
-        ]]): {
+        case deep.some([
+          unit,
+          [
+            // @ts-expect-error intended type error
+            string
+          ]
+        ]): {
           throw new Error('should not match case 1')
         }
-        case deep.some([object, [
-          1,
-          number,
-          // @ts-expect-error intended type error
-          object
-        ]]): {
+        case deep.some([
+          object,
+          [
+            1,
+            number,
+            // @ts-expect-error intended type error
+            object
+          ]
+        ]): {
           throw new Error('should not match')
         }
         case deep.some([object, [1, 2, 'string']]): {
@@ -412,11 +427,14 @@ describe('Matcher', function () {
         case deep.exact([unit]): {
           throw new Error('should not match case 1')
         }
-        case deep.exact([{
-          // @ts-expect-error intended type error
-          number: string,
-          string
-        }, array]): {
+        case deep.exact([
+          {
+            // @ts-expect-error intended type error
+            number: string,
+            string
+          },
+          array
+        ]): {
           throw new Error('should not match')
         }
         case deep.exact([{ number, string }, array]): {
@@ -434,7 +452,7 @@ describe('Matcher', function () {
     it('unit (any)', function (done) {
       const { patterns, exact } = match({
         test: Symbol('something you never seen')
-      })
+      } as const)
 
       switch (patterns) {
         case exact({ test: unit }): {
@@ -447,7 +465,7 @@ describe('Matcher', function () {
       }
     })
     it('String', function (done) {
-      const { patterns, exact } = match({ test: 'str' })
+      const { patterns, exact } = match({ test: 'str' } as const)
 
       switch (patterns) {
         case exact({ test: string }): {
@@ -460,7 +478,7 @@ describe('Matcher', function () {
       }
     })
     it('Number', function (done) {
-      const { patterns, exact } = match({ test: 123 })
+      const { patterns, exact } = match({ test: 123 } as const)
 
       switch (patterns) {
         case exact({ test: number }): {
@@ -473,7 +491,7 @@ describe('Matcher', function () {
       }
     })
     it('Boolean', function (done) {
-      const { patterns, exact } = match({ test: false })
+      const { patterns, exact } = match({ test: false } as const)
 
       switch (patterns) {
         case exact({ test: boolean }): {
@@ -486,7 +504,7 @@ describe('Matcher', function () {
       }
     })
     it('BigInt', function (done) {
-      const { patterns, exact } = match({ test: BigInt(123) })
+      const { patterns, exact } = match({ test: BigInt(123) } as const)
 
       switch (patterns) {
         case exact({ test: bigint }): {
@@ -499,7 +517,7 @@ describe('Matcher', function () {
       }
     })
     it('Array', function (done) {
-      const { patterns, exact } = match({ test: [] })
+      const { patterns, exact } = match({ test: [] } as const)
 
       switch (patterns) {
         case exact({ test: array }): {
@@ -512,7 +530,7 @@ describe('Matcher', function () {
       }
     })
     it('Object', function (done) {
-      const { patterns, exact } = match({ test: {} })
+      const { patterns, exact } = match({ test: {} } as const)
 
       switch (patterns) {
         case exact({ test: object }): {
@@ -524,11 +542,14 @@ describe('Matcher', function () {
         }
       }
     })
-    it('Nothing (undefined)', function (done) {
-      const { patterns, exact } = match({ test: undefined })
+    it('Nothing (undefined, null)', function (done) {
+      const { patterns, exact } = match({
+        test: undefined,
+        test2: null
+      } as const)
 
       switch (patterns) {
-        case exact({ test: nothing }): {
+        case exact({ test: nothing, test2: null }): {
           done()
           break
         }
@@ -539,8 +560,8 @@ describe('Matcher', function () {
     })
     it('Symbol', function (done) {
       const { patterns, exact } = match({
-        test: Symbol('something you never seen 2')
-      })
+        test: Symbol('something')
+      } as const)
 
       switch (patterns) {
         case exact({ test: symbol }): {
@@ -557,8 +578,8 @@ describe('Matcher', function () {
         fn () {
           return 1
         },
-        async fn2 () { }
-      })
+        async fn2 () {}
+      } as const)
 
       switch (patterns) {
         case exact({
@@ -574,7 +595,9 @@ describe('Matcher', function () {
       }
     })
     it('Promise', function (done) {
-      const { patterns, exact } = match({ p: Promise.resolve(42) })
+      const { patterns, exact } = match({
+        p: Promise.resolve(42)
+      } as const)
 
       switch (patterns) {
         case exact({ p: promise }): {
@@ -588,12 +611,16 @@ describe('Matcher', function () {
     })
     it('Custom Matching Function', function (done) {
       const refFunc = (n: number) => 1
-      const { patterns, some, exact } = match({ p: 42, s: '69', f: refFunc })
+      const { patterns, some, exact } = match({
+        p: 42,
+        s: '69',
+        f: refFunc
+      } as const)
 
       switch (patterns) {
         case some({
           // @ts-expect-error intended type error
-          s: () => { }
+          s: () => {}
         }): {
           throw new Error('should not match')
         }
