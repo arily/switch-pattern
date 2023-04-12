@@ -4,6 +4,7 @@ import { join, relative, resolve, dirname } from 'path'
 import { readFile, writeFile, readdir } from 'fs/promises'
 import { existsSync, mkdirSync } from 'fs'
 import { minify } from 'terser'
+import report from './report.mjs'
 
 async function getFiles (dir) {
   const dirents = await readdir(dir, { withFileTypes: true })
@@ -18,17 +19,6 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 const folder = join(__dirname, '../dist')
 if (!existsSync(folder)) {
   mkdirSync(folder)
-}
-
-const size = function getReadableFileSizeString (fileSizeInBytes) {
-  let i = -1
-  const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB']
-  do {
-    fileSizeInBytes /= 1024
-    i++
-  } while (fileSizeInBytes > 1024)
-
-  return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i]
 }
 
 function ensureDirectoryExistence (filePath) {
@@ -74,19 +64,21 @@ const _minify = async (code) => {
 const output = join(__dirname, '../output/')
 const dist = join(__dirname, '../dist/')
 
-async function job (code) {
-  console.info('input size:', size(code.length))
-  code = await _minify(code)
-  console.info('minified code size:', size(code.length))
-  return code
+const reports = []
+async function job (code, path) {
+  // const esm = path.includes('esm/') ? 'esm' : undefined
+  const after = await _minify(code)
+  reports.push({ path, before: code, after })
+  return after
 }
 
 async function writeBack (path, code) {
   ensureDirectoryExistence(path)
   writeFile(path, code, 'utf-8')
 }
-getFiles(output).then(paths => {
-  paths.map(async path => {
+
+getFiles(output).then(async paths => {
+  await Promise.all(paths.map(async path => {
     // omit macros (files are empty)
     if (path.includes('.macro.')) return
 
@@ -95,9 +87,10 @@ getFiles(output).then(paths => {
     // console.log(path, _path, __path)
     let code = await readFile(path, 'utf-8')
     if (!path.includes('.d.ts')) {
-      console.log('job: ', __path)
-      code = await job(code)
+      code = await job(code, __path)
     }
     return writeBack(__path, code)
-  })
+  }))
+
+  report(reports)
 })
