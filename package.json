@@ -15,7 +15,7 @@
         "build:declaration": "tsc -p tsconfig.types.json;",
         "build": "npm run build:code && npm run build:declaration && node scripts/minify.mjs",
         "build:test": "npm run build:code && ttsc -p tsconfig.json; node scripts/minify.mjs",
-        "build:clean": "rn -rf output"
+        "build:clean": "rm -rf output"
     },
     "dependencies": {},
     "maintainers": [
