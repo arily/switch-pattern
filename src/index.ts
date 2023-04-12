@@ -24,7 +24,7 @@ export const callable = Symbol('function')
 export const symbol = Symbol('symbol')
 export const array = Symbol('array')
 export const promise = Symbol('promise')
-export const custom = <T>(cb: MatchCallbackDef<T>) => {
+export const custom = <T>(cb: MatchCallbackDef<T>): MatchCallback<T> => {
   return Object.assign(cb, { __custom: true } as const)
 }
 
@@ -226,11 +226,11 @@ export class Match<T extends Obj> {
     return this
   }
 
-  deepSome (c: Some<T>): this | undefined {
+  deepSome (c: Some<T>) {
     return deepSome(this.t, c) && this
   }
 
-  deepExact (c: Exact<T>): this | undefined {
+  deepExact (c: Exact<T>) {
     return deepExact(this.t, c) && this
   }
 
