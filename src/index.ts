@@ -48,11 +48,18 @@ function $strictEq<T> (test: T, comparedWith: T) {
  * - undefined
  */
 function $nothing<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof nothing> {
-  return ((test === undefined || test === null) && comparedWith === nothing)
+  return (
+    (test === undefined || test === null)
+    && comparedWith === nothing
+  )
 }
 
 function $custom<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>) {
-  return (typeof comparedWith === 'function' && '__custom' in comparedWith && comparedWith(test))
+  return (
+    typeof comparedWith === 'function'
+    && '__custom' in comparedWith
+    && comparedWith(test)
+  )
 }
 
 const reverseTypes = {
