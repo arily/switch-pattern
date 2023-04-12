@@ -6,11 +6,17 @@ type Obj = Record<any, any>
 type MatchCallbackDef<T = unknown> = (test: T) => boolean
 type MatchCallback<T = unknown> = MatchCallbackDef<T> & { __custom: true }
 
+export type DeepExact<T> = {
+  [key in keyof T]: (T[key] extends Obj ? DeepExact<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
+}
+export type DeepSome<T> = {
+  [key in keyof T]?: (T[key] extends Obj ? DeepSome<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
+}
 export type Exact<T> = {
-  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
+  [key in keyof T]: T[key] | MatchCallback<T[key]> | Types<T[key]>;
 }
 export type Some<T> = {
-  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
+  [key in keyof T]?: T[key] | MatchCallback<T[key]> | Types<T[key]>;
 }
 
 export const string = Symbol('string')
@@ -134,7 +140,7 @@ function $canDeep<T> (test$: T, compareWith$: T) {
   || (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
-function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T>) {
+function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T> | DeepExact<T>) {
   if (Array.isArray(test$) && Array.isArray(compareWith$)) {
     return test$.length === compareWith$.length
   }
@@ -142,7 +148,7 @@ function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T>) {
   return Object.keys(test$).every(k => keyofC.includes(k))
 }
 
-function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
+function deepSome <TDeep extends Obj> (_t: TDeep, c: DeepSome<TDeep>) {
   let key: keyof TDeep
   for (key in c) {
     if (!$compareSome!(_t[key], c[key])) {
@@ -160,7 +166,7 @@ function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
   return true
 }
 
-function deepExact <TDeep extends Obj> (_t: TDeep, c: Exact<TDeep>) {
+function deepExact <TDeep extends Obj> (_t: TDeep, c: DeepExact<TDeep>) {
   if (!exactKeys(_t, c)) {
     return
   }
@@ -226,11 +232,11 @@ export class Match<T extends Obj> {
     return this
   }
 
-  deepSome (c: Some<T>) {
+  deepSome (c: DeepSome<T>) {
     return deepSome(this.t, c) && this
   }
 
-  deepExact (c: Exact<T>) {
+  deepExact (c: DeepExact<T>) {
     return deepExact(this.t, c) && this
   }
 

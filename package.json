@@ -10,7 +10,7 @@
     "scripts": {
         "clear": "rm -rf dist && rm -rf output",
         "clear:all": "rm -rf node_modules/ && npm run clear",
-        "test": "nyc  ts-mocha -p tsconfig.json src/**/*.spec.ts",
+        "test": "nyc ts-mocha -p tsconfig.json src/**/*.spec.ts",
         "build:code": "npm run clear && ttsc -p tsconfig.cjs.json; ttsc -p tsconfig.esm.json;",
         "build:declaration": "tsc -p tsconfig.types.json;",
         "build": "npm run build:code && npm run build:declaration && node scripts/minify.mjs",

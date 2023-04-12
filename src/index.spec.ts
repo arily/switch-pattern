@@ -1,3 +1,5 @@
+import type {} from 'mocha'
+
 import { assert } from 'console'
 import {
   callable,
