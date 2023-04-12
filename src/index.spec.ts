@@ -561,7 +561,10 @@ describe('Matcher', function () {
       })
 
       switch (patterns) {
-        case exact({ fn: callable, fn2: callable }): {
+        case exact({
+          fn: callable,
+          fn2: callable
+        }): {
           done()
           break
         }

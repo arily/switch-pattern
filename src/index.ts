@@ -57,18 +57,18 @@ type Types<T> =
       ? typeof number
       : T extends bigint
         ? typeof bigint
-        : T extends any[]
-          ? typeof array
-          : T extends Record<any, any>
-            ? typeof object | typeof array
-            : T extends boolean
-              ? typeof boolean
-              : T extends CallableFunction
-                ? typeof callable
-                : T extends symbol
-                  ? typeof symbol
-                  : T extends undefined | null
-                    ? typeof nothing
+        : T extends CallableFunction
+          ? typeof callable
+          : T extends boolean
+            ? typeof boolean
+            : T extends symbol
+              ? typeof symbol
+              : T extends undefined | null
+                ? typeof nothing
+                : T extends any[]
+                  ? typeof array
+                  : T extends Record<any, any>
+                    ? typeof object | typeof array
                     : never
 ) | typeof unit
 
