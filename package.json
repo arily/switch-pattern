@@ -1,7 +1,7 @@
 {
     "name": "switch-pattern",
     "description": "pattern matching done right",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "license": "MIT",
     "author": {
         "name": "arily",
