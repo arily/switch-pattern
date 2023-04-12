@@ -48,28 +48,19 @@ const reverseTypes = {
 } as const
 
 type ReverseTypes = keyof typeof reverseTypes
+
 type Types<T> =
-(T extends Promise<any>
-  ? typeof promise
-  : T extends string
-    ? typeof string
-    : T extends number
-      ? typeof number
-      : T extends bigint
-        ? typeof bigint
-        : T extends CallableFunction
-          ? typeof callable
-          : T extends boolean
-            ? typeof boolean
-            : T extends symbol
-              ? typeof symbol
-              : T extends undefined | null
-                ? typeof nothing
-                : T extends any[]
-                  ? typeof array
-                  : T extends Record<any, any>
-                    ? typeof object | typeof array
-                    : never
+(
+  | T extends Promise<any> ? typeof promise : never
+  | T extends string ? typeof string : never
+  | T extends number ? typeof number : never
+  | T extends bigint ? typeof bigint : never
+  | T extends CallableFunction ? typeof callable : never
+  | T extends boolean ? typeof boolean : never
+  | T extends symbol ? typeof symbol : never
+  | T extends undefined | null ? typeof nothing : never
+  | T extends any[] ? typeof array : never
+  | T extends Record<any, any> ? typeof object | typeof array : never
 ) | typeof unit
 
 function $unit<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof unit> {
