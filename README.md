@@ -44,7 +44,6 @@ const match = <T>(input: T): Context => {
 ### Top-tier TS & ESLint support
 
 ```typescript
-import { match, number, string, unit } from ".";
 const { patterns, exact } = match([1, 2, "what"] as const);
 // use with switch
 switch (patterns) {
@@ -57,13 +56,13 @@ switch (patterns) {
         console.log("matched");
         break;
     }
-    // TS Error: Type 'string' is not assignable to type 'symbol | 2'.
+    // TS Error: Type Type 'string' is not assignable to type '2 | MatchCallback<2> | Types<2>'.
     case exact([number, "2", string]): {
         console.log("matched");
         break;
     }
     /**
-     * TS Error: Argument of type '[symbol, 2]' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
+     * TS Error: Argument of type '[unique symbol, 2]' is not assignable to parameter of type 'readonly [1 | MatchCallback<1> | Types<1>, 2 | MatchCallback<2> | Types<2>, "what" | MatchCallback<"what"> | Types<"what">]'.
      * Source has 2 element(s) but target requires 3.
      */
     case exact([number, 2]): {
@@ -71,8 +70,8 @@ switch (patterns) {
         break;
     }
     /**
-     *  Argument of type '{ name: symbol; }' is not assignable to parameter of type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
-     * Object literal may only specify known properties, and 'name' does not exist in type 'readonly [symbol | 1, symbol | 2, symbol | "what"]'.
+     * Argument of type '{ name: symbol; }' is not assignable to parameter of type 'readonly [1 | MatchCallback<1> | Types<1>, 2 | MatchCallback<2> | Types<2>, "what" | MatchCallback<"what"> | Types<"what">]'.
+     * Object literal may only specify known properties, and 'name' does not exist in type 'readonly [1 | MatchCallback<1> | Types<1>, 2 | MatchCallback<2> | Types<2>, "what" | MatchCallback<"what"> | Types<"what">]'.
      */
     case exact({ name: string }): {
         console.log("matched");
@@ -110,179 +109,40 @@ if (exact([number, number, string, { number: number }])) {
 }
 ```
 
-### pattern matching types
+### use custom compare function
 
 ```typescript
-import {
-    callable,
-    match,
-    number,
-    string,
-    unit,
-    object,
-    array,
-    bigint,
-    nothing,
-    symbol,
-    boolean,
-    promise,
-} from ".";
-// index.spec.ts
-describe("matching types", function () {
-    it("unit (any)", function (done) {
-        const { patterns, exact } = match({
-            test: Symbol("something you never seen"),
-        });
+import { custom } from "switch-patterns";
+const { exact, patterns } = match([1, 2, "what", { number: 42 }] as const);
 
-        switch (patterns) {
-            case exact({ test: unit }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("String", function (done) {
-        const { patterns, exact } = match({ test: "str" });
-
-        switch (patterns) {
-            case exact({ test: string }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Number", function (done) {
-        const { patterns, exact } = match({ test: 123 });
-
-        switch (patterns) {
-            case exact({ test: number }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Boolean", function (done) {
-        const { patterns, exact } = match({ test: false });
-
-        switch (patterns) {
-            case exact({ test: boolean }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("BigInt", function (done) {
-        const { patterns, exact } = match({ test: BigInt(123) });
-
-        switch (patterns) {
-            case exact({ test: bigint }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Array", function (done) {
-        const { patterns, exact } = match({ test: [] });
-
-        switch (patterns) {
-            case exact({ test: array }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Object", function (done) {
-        const { patterns, exact } = match({ test: {} });
-
-        switch (patterns) {
-            case exact({ test: object }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Nothing (undefined)", function (done) {
-        const { patterns, exact } = match({ test: undefined });
-
-        switch (patterns) {
-            case exact({ test: nothing }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Symbol", function (done) {
-        const { patterns, exact } = match({
-            test: Symbol("something you never seen 2"),
-        });
-
-        switch (patterns) {
-            case exact({ test: symbol }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Callable", function (done) {
-        const { patterns, exact } = match({
-            fn() {
-                return 1;
-            },
-            async fn2() {},
-        });
-
-        switch (patterns) {
-            case exact({ fn: callable, fn2: callable }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-    it("Promise", function (done) {
-        const { patterns, exact } = match({ p: Promise.resolve(42) });
-
-        switch (patterns) {
-            case exact({ p: promise }): {
-                done();
-                break;
-            }
-            default: {
-                throw new Error("matched nothing");
-            }
-        }
-    });
-});
+switch (patterns) {
+    case exact([number, 2, custom((val) => val === 42)]): {
+        console.log("matched");
+        break;
+    }
+    default: {
+        throw new Error("boom");
+    }
+}
 ```
+
+### pattern matching types
+
+| Type                    | import                                      | description                                                                                |
+| ----------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| any Function            | `import { callable } from 'switch-pattern'` |                                                                                            |
+| any AsyncFunction       | `import { callable } from 'switch-pattern'` |                                                                                            |
+| any number              | `import { number } from 'switch-pattern'`   |                                                                                            |
+| any bigint              | `import { bigint } from 'switch-pattern'`   |                                                                                            |
+| any string              | `import { string } from 'switch-pattern'`   |                                                                                            |
+| any value               | `import { unit } from 'switch-pattern'`     |                                                                                            |
+| any object              | `import { object } from 'switch-pattern'`   | null is considered as an object in javascript. To match null, use primitive `null` instead |
+| any array               | `import { array } from 'switch-pattern'`    |                                                                                            |
+| null or undefined       | `import { nothing } from 'switch-pattern'`  |                                                                                            |
+| any symbol              | `import { symbol } from 'switch-pattern'`   |                                                                                            |
+| any boolean value       | `import { boolean } from 'switch-pattern'`  | strict `true` or `false`, will not cast to truthy or falsy values.                         |
+| any Promise             | `import { promise } from 'switch-pattern'`  |                                                                                            |
+| custom compare function | `import { custom } from 'switch-pattern'`   | `matcher((matchValue: *infered from usage*) => boolean)`                                   |
 
 ## Development
 

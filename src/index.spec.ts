@@ -11,7 +11,8 @@ import {
   nothing,
   symbol,
   boolean,
-  promise
+  promise,
+  custom
 } from '.'
 
 const testBaseObject = { number: 1, string: 'string' }
@@ -44,6 +45,7 @@ describe('Matcher', function () {
         case some({ number: '2' }): {
           throw new Error('should not match')
         }
+        // @ts-expect-error intended type error
         case some({ number: string }): {
           throw new Error('should not match')
         }
@@ -62,8 +64,12 @@ describe('Matcher', function () {
         case exact({ number: 2 }): {
           throw new Error('should not match: missing member')
         }
-        // @ts-expect-error intended type error
-        case exact({ number: 2, string: 2 }): {
+
+        case exact({
+          number: 2,
+          // @ts-expect-error intended type error
+          string: 2
+        }): {
           throw new Error('should not match')
         }
         case exact({ number: 2, string: unit }): {
@@ -87,7 +93,10 @@ describe('Matcher', function () {
     const { patterns, some, exact } = match(testBaseArray)
     it('some', function (done) {
       switch (patterns) {
-        case some([string, 2]): {
+        case some([
+          // @ts-expect-error intended type error
+          string, 2
+        ]): {
           throw new Error('should not match')
         }
         case some([unit, 2]): {
@@ -119,6 +128,7 @@ describe('Matcher', function () {
     const { patterns, some, exact, deep } = match(testDeepObject)
     it('one layer with some', function (done) {
       switch (patterns) {
+        // @ts-expect-error intended type error
         case some({ l1: callable }): {
           throw new Error('should not match; callable')
         }
@@ -133,7 +143,12 @@ describe('Matcher', function () {
     })
     it('one layer with exact', function (done) {
       switch (patterns) {
-        case exact({ l1: bigint, deep: object, array }): {
+        case exact({
+          // @ts-expect-error intended type error
+          l1: bigint,
+          deep: object,
+          array
+        }): {
           throw new Error('should not match')
         }
         case exact({ l1: string, deep: object, array }): {
@@ -147,7 +162,13 @@ describe('Matcher', function () {
     })
     it('deep object with deepSome', function (done) {
       switch (patterns) {
-        case deep.some({ l1: unit, deep: { number: string } }): {
+        case deep.some({
+          l1: unit,
+          deep: {
+            // @ts-expect-error intended type error
+            number: string
+          }
+        }): {
           throw new Error('should not match')
         }
         case deep.some({ l1: string, deep: { number } }): {
@@ -161,15 +182,28 @@ describe('Matcher', function () {
     })
     it('array in object with deepSome', function (done) {
       switch (patterns) {
-        // @ts-expect-error intended type error
-        case deep.some({ array: [2, 2, unit] }): {
+        case deep.some({
+          array: [
+          // @ts-expect-error intended type error
+            2,
+            2,
+            unit
+          ]
+        }): {
           throw new Error('should not match because 1!=2')
         }
-        // @ts-expect-error intended type error
-        case deep.some({ array: [number, 2, 2] }): {
+        case deep.some({
+          array: [
+            number,
+            2,
+            // @ts-expect-error intended type error
+            2
+          ]
+        }): {
           throw new Error('should not match because [3] is string')
         }
         case deep.some({
+          // @ts-expect-error intended type error
           l1: callable,
           array: [number, 2, 'string']
         }): {
@@ -189,10 +223,14 @@ describe('Matcher', function () {
 
     it('deep object with deepExact', function (done) {
       switch (patterns) {
-        // @ts-expect-error intended type error
         case deep.exact({
           l1: string,
-          deep: { number: string, string }
+
+          deep: {
+            // @ts-expect-error intended type error
+            number: string,
+            string
+          }
         }): {
           throw new Error(
             'should not match because this pattern misses some members'
@@ -200,15 +238,22 @@ describe('Matcher', function () {
         }
         case deep.exact({
           l1: string,
-          deep: { number: string, string },
+          deep: {
+            // @ts-expect-error intended type error
+            number: string,
+            string
+          },
           array: unit
         }): {
           throw new Error('should not match')
         }
         case deep.exact({
           l1: string,
-          // @ts-expect-error intended type error
-          deep: { number: 'string', string },
+          deep: {
+            // @ts-expect-error intended type error
+            number: 'string',
+            string
+          },
           array: unit
         }): {
           throw new Error('should not match: no deep')
@@ -229,6 +274,7 @@ describe('Matcher', function () {
     it('array in object with deepExact', function (done) {
       switch (patterns) {
         case deep.exact({
+          // @ts-expect-error intended type error
           l1: bigint,
           array: [1, 2, unit],
           deep: unit
@@ -254,7 +300,11 @@ describe('Matcher', function () {
     const { patterns, some, exact, deep } = match(testDeepArray)
     it('one layer of array with some', function (done) {
       switch (patterns) {
-        case some([number, array]): {
+        case some([
+          // @ts-expect-error intended type error
+          number,
+          array
+        ]): {
           throw new Error('should not match: should be obj, arr')
         }
         case some([unit, object]): {
@@ -286,7 +336,10 @@ describe('Matcher', function () {
     })
     it('deep object with deepSome', function (done) {
       switch (patterns) {
-        case deep.some([{ number: string }]): {
+        case deep.some([{
+          // @ts-expect-error intended type error
+          number: string
+        }]): {
           throw new Error('should not match')
         }
         case deep.some([{ number: 1 }]): {
@@ -300,10 +353,18 @@ describe('Matcher', function () {
     })
     it('array in object with deepSome', function (done) {
       switch (patterns) {
-        case deep.some([unit, [string]]): {
+        case deep.some([unit, [
+          // @ts-expect-error intended type error
+          string
+        ]]): {
           throw new Error('should not match case 1')
         }
-        case deep.some([object, [1, number, object]]): {
+        case deep.some([object, [
+          1,
+          number,
+          // @ts-expect-error intended type error
+          object
+        ]]): {
           throw new Error('should not match')
         }
         case deep.some([object, [1, 2, 'string']]): {
@@ -349,7 +410,11 @@ describe('Matcher', function () {
         case deep.exact([unit]): {
           throw new Error('should not match case 1')
         }
-        case deep.exact([{ number: string, string }, array]): {
+        case deep.exact([{
+          // @ts-expect-error intended type error
+          number: string,
+          string
+        }, array]): {
           throw new Error('should not match')
         }
         case deep.exact([{ number, string }, array]): {
@@ -508,6 +573,37 @@ describe('Matcher', function () {
 
       switch (patterns) {
         case exact({ p: promise }): {
+          done()
+          break
+        }
+        default: {
+          throw new Error('matched nothing')
+        }
+      }
+    })
+    it('Custom Matching Function', function (done) {
+      const refFunc = (n: number) => 1
+      const { patterns, some, exact } = match({ p: 42, s: '69', f: refFunc })
+
+      switch (patterns) {
+        case some({
+          // @ts-expect-error intended type error
+          s: () => { }
+        }): {
+          throw new Error('should not match')
+        }
+        case some({
+          f: () => 1
+        }): {
+          throw new Error('should not match')
+        }
+        case exact({
+          p: custom((t) => {
+            return t === 42
+          }),
+          s: string,
+          f: refFunc
+        }): {
           done()
           break
         }

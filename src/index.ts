@@ -3,11 +3,14 @@
 
 type Obj = Record<any, any>
 
+type MatchCallbackDef<T = unknown> = (test: T) => boolean
+type MatchCallback<T = unknown> = MatchCallbackDef<T> & { __custom: true }
+
 export type Exact<T> = {
-  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | Types;
+  [key in keyof T]: (T[key] extends Obj ? Exact<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
 }
 export type Some<T> = {
-  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | Types;
+  [key in keyof T]?: (T[key] extends Obj ? Some<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
 }
 
 export const string = Symbol('string')
@@ -21,26 +24,43 @@ export const callable = Symbol('function')
 export const symbol = Symbol('symbol')
 export const array = Symbol('array')
 export const promise = Symbol('promise')
+export const custom = <T>(cb: MatchCallbackDef<T>) => {
+  return Object.assign(cb, { __custom: true } as const)
+}
 
-function $compareWithUnit (test: any, comparedWith: any) {
+function $unit<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof unit> {
   return (comparedWith === unit)
 }
 
-function $sameReference (test: any, comparedWith: any) {
+/**
+ * checks for
+ * - same reference
+ * - null
+ * - primitive value
+ */
+function $strictEq<T> (test: T, comparedWith: T) {
   return (test === comparedWith)
 }
 
-function $undefined (test: any, comparedWith: any) {
-  return (test === undefined && comparedWith === nothing)
+/**
+ * check for primitive nothing:
+ * - null
+ * - undefined
+ */
+function $nothing<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof nothing> {
+  return ((test === undefined || test === null) && comparedWith === nothing)
+}
+
+function $custom<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>) {
+  return typeof comparedWith === 'function' && '__custom' in comparedWith && comparedWith(test)
 }
 
 const reverseTypes = {
   [unit]: 'unit',
   [string]: 'string',
   [number]: 'number',
-  [nothing]: 'nothing',
-  [object]: 'object',
   [bigint]: 'bigint',
+  [object]: 'object',
   [boolean]: 'boolean',
   [callable]: 'callable',
   [symbol]: 'symbol',
@@ -48,11 +68,36 @@ const reverseTypes = {
   [array]: 'array'
 } as const
 
-type Types = keyof typeof reverseTypes
-function $compareBase<T> (test?: T, comparedWith?: T | Types) {
-  return $compareWithUnit!(test, comparedWith)
-    || $sameReference!(test, comparedWith)
-    || $undefined!(test, comparedWith)
+type ReverseTypes = keyof typeof reverseTypes
+type Types<T> =
+(T extends Promise<any>
+  ? typeof promise
+  : T extends string
+    ? typeof string
+    : T extends number
+      ? typeof number
+      : T extends bigint
+        ? typeof bigint
+        : T extends any[]
+          ? typeof array
+          : T extends Record<any, any>
+            ? typeof object | typeof array
+            : T extends boolean
+              ? typeof boolean
+              : T extends CallableFunction
+                ? typeof callable
+                : T extends symbol
+                  ? typeof symbol
+                  : T extends undefined | null
+                    ? typeof nothing
+                    : never
+) | typeof unit
+
+function $compareBase<T> (test: T, comparedWith: T | MatchCallback<T> | Types<T>) {
+  return $unit!(test, comparedWith)
+    || $strictEq!(test, comparedWith)
+    || $nothing!(test, comparedWith)
+    || $custom!(test, comparedWith)
     // match types
     || (
       typeof comparedWith === 'symbol'
@@ -64,16 +109,16 @@ function $compareBase<T> (test?: T, comparedWith?: T | Types) {
             : test instanceof Promise
               ? comparedWith === promise
               // eslint-disable-next-line valid-typeof
-              : (typeof test === reverseTypes[comparedWith as Exclude<typeof comparedWith, T>])
+              : (typeof test === reverseTypes[comparedWith as ReverseTypes])
       )
     )
 }
 
-function $compareSome<T> (test?: T, compareWith?: T | Types) {
+function $compareSome<T> (test: T, compareWith: T | MatchCallback<T> | Types<T>) {
   return $compareBase!(test, compareWith)
 }
 
-function $compareExact<T> (test: T, compareWith: T | Types) {
+function $compareExact<T> (test: T, compareWith: T | MatchCallback<T> | Types<T>) {
   return $compareBase!(test, compareWith)
 }
 
@@ -82,7 +127,7 @@ function $canDeep<T> (test$: T, compareWith$: T) {
   || (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
-function exactKeys<T extends Obj> (test$: T, compareWith$: T) {
+function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T>) {
   if (Array.isArray(test$) && Array.isArray(compareWith$)) { return test$.length === compareWith$.length }
   const keyofC = Object.keys(compareWith$)
   return Object.keys(test$).every(k => keyofC.includes(k))
@@ -94,7 +139,7 @@ function deepSome <TDeep extends Obj> (_t: TDeep, c: Some<TDeep>) {
     if (!$compareSome!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
       if ($canDeep!(_t[key], c[key])) {
-        const result = deepSome(_t[key], c[key] as NonNullable<typeof c[typeof key]>)
+        const result = deepSome(_t[key], c[key] as Exclude<TDeep, Types<TDeep>>)
         if (!result) {
           return
         }
@@ -115,7 +160,7 @@ function deepExact <TDeep extends Obj> (_t: TDeep, c: Exact<TDeep>) {
     if (!$compareExact!(_t[key], c[key])) {
       if (typeof c[key] === 'symbol') return
       if ($canDeep!(_t[key], c[key])) {
-        const result = deepExact(_t[key], c[key] as Exclude<TDeep, Types>)
+        const result = deepExact(_t[key], c[key] as Exclude<TDeep, Types<TDeep>>)
         if (!result) {
           return
         }
