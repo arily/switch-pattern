@@ -1,4 +1,4 @@
-import { match, number, string, unit } from '.'
+import { match, number, string, unit, custom } from '.'
 
 const useCases: CallableFunction[] = [
 
@@ -48,6 +48,19 @@ const useCases: CallableFunction[] = [
 
     if (exact([number, number, string, { number }])) {
       console.log('matched deep')
+    }
+  },
+  () => {
+    const { exact, patterns } = match([1, 2, 'what', { number: 42 }] as const)
+
+    switch (patterns) {
+      case exact([number, 2, unit, custom((val) => val.number === 42)]): {
+        console.log('matched')
+        break
+      }
+      default: {
+        throw new Error('boom')
+      }
     }
   }
 ]

@@ -116,7 +116,7 @@ import { custom } from "switch-patterns";
 const { exact, patterns } = match([1, 2, "what", { number: 42 }] as const);
 
 switch (patterns) {
-    case exact([number, 2, custom((val) => val === 42)]): {
+    case exact([number, 2, unit, custom((val) => val.number === 42)]): {
         console.log("matched");
         break;
     }
