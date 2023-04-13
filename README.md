@@ -28,16 +28,16 @@ switch (patterns) {
 
 ```typescript
 const match = <T>(input: T): Context => {
-  some(compareWith: Partial<T>): Context | undefined
-  exact(compareWith: T): Context | undefined
+  some(compareWith: Some<T>): Context | undefined
+  exact(compareWith: Exact<T>): Context | undefined
   deep: {
-    some(compareWith: Partial<T>): Context | undefined
-    exact(compareWith: T): Context | undefined
+    some(compareWith: DeepSome<T>): Context | undefined
+    exact(compareWith: DeepExact<T>): Context | undefined
   }
   // same as deep.some
-  deepSome(compareWith: Partial<T>): Context | undefined
+  deepSome(compareWith: DeepSome<T>)): Context | undefined
   // same as deep.exact
-  deepExact(compareWith: T): Context | undefined
+  deepExact(compareWith: DeepExact<T>): Context | undefined
 }
 ```
 
@@ -128,21 +128,20 @@ switch (patterns) {
 
 ### pattern matching types
 
-| Type                    | import                                      | description                                                                                |
-| ----------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| any Function            | `import { callable } from 'switch-pattern'` |                                                                                            |
-| any AsyncFunction       | `import { callable } from 'switch-pattern'` |                                                                                            |
-| any number              | `import { number } from 'switch-pattern'`   |                                                                                            |
-| any bigint              | `import { bigint } from 'switch-pattern'`   |                                                                                            |
-| any string              | `import { string } from 'switch-pattern'`   |                                                                                            |
-| any value               | `import { unit } from 'switch-pattern'`     |                                                                                            |
-| any object              | `import { object } from 'switch-pattern'`   | null is considered as an object in javascript. To match null, use primitive `null` instead |
-| any array               | `import { array } from 'switch-pattern'`    |                                                                                            |
-| null or undefined       | `import { nothing } from 'switch-pattern'`  |                                                                                            |
-| any symbol              | `import { symbol } from 'switch-pattern'`   |                                                                                            |
-| any boolean value       | `import { boolean } from 'switch-pattern'`  | strict `true` or `false`, will not cast to truthy or falsy values.                         |
-| any Promise             | `import { promise } from 'switch-pattern'`  |                                                                                            |
-| custom compare function | `import { custom } from 'switch-pattern'`   | `matcher((matchValue: *infered from usage*) => boolean)`                                   |
+| Type                    | import                                      | description                                                                                           |
+| ----------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| any Callable            | `import { callable } from 'switch-pattern'` | function, async function, arrow function                                                              |
+| any number              | `import { number } from 'switch-pattern'`   | `typeof NaN` is a number, NaN will be matched. to exclude NaN use `custom((v) => !isNaN(v))` instead. |
+| any bigint              | `import { bigint } from 'switch-pattern'`   |                                                                                                       |
+| any string              | `import { string } from 'switch-pattern'`   |                                                                                                       |
+| any value               | `import { unit } from 'switch-pattern'`     | designed to be a placeholder for any unknown value.                                                   |
+| any object              | `import { object } from 'switch-pattern'`   | `null` is considered as objects in javascript. To match `null`, use primitive `null` instead.         |
+| any array               | `import { array } from 'switch-pattern'`    | uses `Array.isArray()` under the hood.                                                                |
+| null or undefined       | `import { nothing } from 'switch-pattern'`  | strict `null` or `undefined`                                                                          |
+| any symbol              | `import { symbol } from 'switch-pattern'`   |                                                                                                       |
+| any boolean value       | `import { boolean } from 'switch-pattern'`  | strict `true` or `false`, will not cast to truthy or falsy values.                                    |
+| any Promise             | `import { promise } from 'switch-pattern'`  |                                                                                                       |
+| custom compare function | `import { custom } from 'switch-pattern'`   | `matcher((matchValue: *infered from usage*) => boolean)`                                              |
 
 ## Development
 
@@ -161,4 +160,4 @@ Give a ⭐️ if this project helped you!
 
 ## License
 
-[The MIT License](http://piecioshka.mit-license.org) @ 2019
+[The MIT License](http://piecioshka.mit-license.org) @ 2023
