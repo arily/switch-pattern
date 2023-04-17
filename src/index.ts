@@ -5,6 +5,7 @@ type Obj = Record<any, any>
 
 type MatchCallbackDef<T = unknown> = (test: T) => boolean
 type MatchCallback<T = unknown> = MatchCallbackDef<T> & { __custom: true }
+type UnpackMatchCallback<T extends MatchCallback<any>> = T extends MatchCallback<infer R> ? R : never
 
 export type DeepExact<T> = {
   [key in keyof T]: (T[key] extends Obj ? DeepExact<T[key]> : T[key]) | MatchCallback<T[key]> | Types<T[key]>;
@@ -17,6 +18,39 @@ export type Exact<T> = {
 }
 export type Some<T> = {
   [key in keyof T]?: T[key] | MatchCallback<T[key]> | Types<T[key]>;
+}
+
+type Types<T> =
+  (
+    | (T extends Promise<any> ? typeof promise : never)
+    | (T extends string ? typeof string : never)
+    | (T extends number ? typeof number : never)
+    | (T extends bigint ? typeof bigint : never)
+    | (T extends CallableFunction ? typeof callable : never)
+    | (T extends boolean ? typeof boolean : never)
+    | (T extends symbol ? typeof symbol : never)
+    | (T extends undefined | null ? typeof nothing : never)
+    | (T extends any[] ? typeof array : never)
+    | (T extends Record<any, any> ? typeof object | typeof array : never)
+  ) | typeof unit
+
+type Revert<T extends Types<any>> =
+| (T extends typeof promise ? Promise<any> : never)
+| (T extends typeof string ? string : never)
+| (T extends typeof number ? number : never)
+| (T extends typeof bigint ? bigint : never)
+| (T extends typeof callable ? CallableFunction : never)
+| (T extends typeof boolean ? boolean : never)
+| (T extends typeof symbol ? symbol : never)
+| (T extends typeof nothing ? undefined | null : never)
+| (T extends typeof array ? any[] | Record<any, any> : never)
+| (T extends typeof object ? Record<any, any> : never)
+
+export type InferPatternType<T> = {
+  [key in keyof T]:
+  | (T[key] extends MatchCallback<any> ? UnpackMatchCallback<T[key]> : never)
+  | (T[key] extends Types<any> ? Revert<T[key]> : never)
+  | (T[key] extends MatchCallback<any> | Types<any> ? never : T[key])
 }
 
 export const string = Symbol('string')
@@ -49,21 +83,11 @@ const reverseTypes = {
 
 type ReverseTypes = keyof typeof reverseTypes
 
-type Types<T> =
-(
-  | T extends Promise<any> ? typeof promise : never
-  | T extends string ? typeof string : never
-  | T extends number ? typeof number : never
-  | T extends bigint ? typeof bigint : never
-  | T extends CallableFunction ? typeof callable : never
-  | T extends boolean ? typeof boolean : never
-  | T extends symbol ? typeof symbol : never
-  | T extends undefined | null ? typeof nothing : never
-  | T extends any[] ? typeof array : never
-  | T extends Record<any, any> ? typeof object | typeof array : never
-) | typeof unit
+export function inferPatternType<TPat> (input: unknown, pattern: TPat): asserts input is InferPatternType<TPat> {
 
-function $unit<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof unit> {
+}
+
+function $unit<T> (test: T, comparedWith?: T | Types<T> | MatchCallback<T>): comparedWith is Exclude<typeof comparedWith, typeof unit> {
   return (comparedWith === unit)
 }
 
@@ -97,7 +121,7 @@ function $custom<T> (test: T, comparedWith: T | Types<T> | MatchCallback<T>) {
   )
 }
 
-function $compareBase<T> (test: T, comparedWith: T | MatchCallback<T> | Types<T>) {
+function $compareBase<T> (test: T, comparedWith?: T | MatchCallback<T> | Types<T>) {
   return $unit!(test, comparedWith)
     || $strictEq!(test, comparedWith)
     || $nothing!(test, comparedWith)
@@ -118,7 +142,7 @@ function $compareBase<T> (test: T, comparedWith: T | MatchCallback<T> | Types<T>
     )
 }
 
-function $compareSome<T> (test: T, compareWith: T | MatchCallback<T> | Types<T>) {
+function $compareSome<T> (test: T, compareWith?: T | MatchCallback<T> | Types<T>) {
   return $compareBase!(test, compareWith)
 }
 
@@ -128,7 +152,7 @@ function $compareExact<T> (test: T, compareWith: T | MatchCallback<T> | Types<T>
 
 function $canDeep<T> (test$: T, compareWith$: T) {
   return (Array.isArray(compareWith$) && Array.isArray(test$))
-  || (typeof compareWith$ === 'object' && typeof test$ === 'object')
+    || (typeof compareWith$ === 'object' && typeof test$ === 'object')
 }
 
 function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T> | DeepExact<T>) {
@@ -139,7 +163,7 @@ function exactKeys<T extends Obj> (test$: T, compareWith$: Exact<T> | DeepExact<
   return Object.keys(test$).every(k => keyofC.includes(k))
 }
 
-function deepSome <TDeep extends Obj> (_t: TDeep, c: DeepSome<TDeep>) {
+function deepSome<TDeep extends Obj> (_t: TDeep, c: DeepSome<TDeep>) {
   let key: keyof TDeep
   for (key in c) {
     if (!$compareSome!(_t[key], c[key])) {
@@ -157,7 +181,7 @@ function deepSome <TDeep extends Obj> (_t: TDeep, c: DeepSome<TDeep>) {
   return true
 }
 
-function deepExact <TDeep extends Obj> (_t: TDeep, c: DeepExact<TDeep>) {
+function deepExact<TDeep extends Obj> (_t: TDeep, c: DeepExact<TDeep>) {
   if (!exactKeys(_t, c)) {
     return
   }

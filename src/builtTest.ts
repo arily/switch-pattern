@@ -1,4 +1,4 @@
-import { match, number, string, unit, custom } from '.'
+import { match, number, string, unit, custom, inferPatternType } from '.'
 
 const useCases: CallableFunction[] = [
 
@@ -60,6 +60,23 @@ const useCases: CallableFunction[] = [
       }
       default: {
         throw new Error('boom')
+      }
+    }
+  },
+  () => {
+    const unk = JSON.parse(JSON.stringify({ test: 123 }))
+    //    ^?
+    const { some, patterns } = match(unk)
+
+    const some1 = {
+      test: number
+    } as const
+    switch (patterns) {
+      case (some(some1)): {
+        inferPatternType(unk, some1)
+        //               ^?
+        console.log(unk.test)
+        //              ^?
       }
     }
   }

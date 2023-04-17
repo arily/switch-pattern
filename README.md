@@ -126,7 +126,37 @@ switch (patterns) {
 }
 ```
 
-### pattern matching types
+### infer matched type **TS only**
+
+Due to TS limit side-effects won't alter the computed type.
+We provide an utility type as well as an assertion function to get around this limit.
+If you know any better way of doing this please let me know.
+
+```typescript
+import { number, inferPatternType } from 'switching-pattern'
+const unk = JSON.parse(JSON.stringify({ test: 123 })); // any
+
+const { some, patterns } = match(unk);
+
+const some1 = {
+    test: number,
+} as const;
+switch (patterns) {
+    case some(some1): {
+        inferPatternType(unk, some1)
+        unk // { readonly test: number }
+        break
+    }
+    // or 
+    case some(some1): {
+        const b = unk as InferPatternType<typeof some1>;
+        b // { readonly test: number }
+        break
+    }
+}
+```
+
+### matching JS types
 
 | Type                    | import                                      | description                                                                                           |
 | ----------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
